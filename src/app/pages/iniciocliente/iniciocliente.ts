@@ -1,14 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-iniciocliente',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './iniciocliente.html',
   styleUrls: ['./iniciocliente.css']
 })
-export class InicioclienteComponent {
+export class InicioclienteComponent implements OnInit {
 
-  // Datos del dashboard – puedes conectarlos a un servicio real
-  nombreCliente = 'Julianna';
+  nombreCliente: string = '';
+
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.nombreCliente = localStorage.getItem('nombre') || 'Cliente';
+  }
+
+  cerrarSesion() {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
 
   proximaCita = {
     tipo: 'Reserva de Tejido Profundo',
@@ -43,11 +58,10 @@ export class InicioclienteComponent {
     }
   ];
 
-  calificacion = 4; // estrellas activas
+  calificacion = 4;
   comentario = '';
 
   enviarComentario(): void {
     console.log('Calificación:', this.calificacion, '| Comentario:', this.comentario);
-    // Aquí conectas con tu servicio de reseñas
   }
 }

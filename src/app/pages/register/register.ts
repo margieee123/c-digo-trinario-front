@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AlertComponent } from '../../components/alert/alert';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AlertComponent],
+  imports: [FormsModule, CommonModule, RouterLink, AlertComponent],
   templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
@@ -21,7 +22,7 @@ export class RegisterComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  private apiUrl = 'http://localhost:8080/auth/register';
+  private apiUrl = `${environment.apiUrl}/auth/register`;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -67,15 +68,10 @@ export class RegisterComponent {
 
   private parsearError(err: any): string {
     if (!err.error) return 'Error al crear la cuenta.';
-
-    // Estructura 1: { "error": "mensaje" }
     if (typeof err.error === 'string') return err.error;
     if (err.error.error) return err.error.error;
-
-    // Estructura 2: { "campo": "mensaje", "campo2": "mensaje2" }
     const mensajes = Object.values(err.error) as string[];
     if (mensajes.length > 0) return mensajes.join(' ');
-
     return 'Error al crear la cuenta.';
   }
 

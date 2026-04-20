@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AlertComponent } from '../../components/alert/alert';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -19,13 +20,11 @@ export class Login {
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  private apiUrl = 'http://localhost:8080/auth/login';
+  private apiUrl = `${environment.apiUrl}/auth/login`;
 
   constructor(private http: HttpClient, private router: Router) {}
 
   onLogin() {
-     console.log('onLogin ejecutado');
-
     this.errorMessage = '';
 
     if (!this.correo || !this.password) {
@@ -49,23 +48,17 @@ export class Login {
       },
       error: (err) => {
         this.isLoading = false;
-        console.log('err completo:', err);
-        console.log('err.error:', err.error);
         this.errorMessage = this.parsearError(err);
-        console.log('errorMessage:', this.errorMessage);
       }
     });
   }
 
   private parsearError(err: any): string {
     if (!err.error) return 'Error al iniciar sesión.';
-
     if (typeof err.error === 'string') return err.error;
     if (err.error.error) return err.error.error;
-
     const mensajes = Object.values(err.error) as string[];
     if (mensajes.length > 0) return mensajes.join(' ');
-
     return 'Error al iniciar sesión.';
   }
 
