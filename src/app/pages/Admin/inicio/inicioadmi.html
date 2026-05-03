@@ -1,0 +1,188 @@
+<!-- inicioadmi.component.html -->
+<div class="admin-shell">
+
+  <!-- ===== HEADER — estilo SpaApp ===== -->
+  <header class="admin-header">
+
+    <!-- Izquierda: marca -->
+    <div class="header-left">
+      <span class="brand-name">SpaApp</span>
+    </div>
+
+    <!-- Centro: navegación -->
+    <nav class="main-nav">
+      <a class="nav-link active">Inicio</a>
+      <a class="nav-link">Agenda</a>
+      <a class="nav-link">Servicios</a>
+      <a class="nav-link">Usuarios</a>
+      <a class="nav-link">Facturación</a>
+      <a class="nav-link">Configuración</a>
+    </nav>
+
+    <!-- Derecha: notif + avatar + cerrar sesión -->
+    <div class="header-right">
+      <button class="notif-btn" aria-label="Notificaciones">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
+      <span class="material-symbols-outlined user-icon-btn">account_circle</span>
+      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+
+  </header>
+
+  <!-- MAIN CANVAS -->
+  <main class="admin-main">
+    <div class="page-wrapper">
+
+      <!-- PAGE TITLE -->
+      <div class="page-title-row">
+        <h1 class="page-title">Panel de Administración</h1>
+        <button class="btn-primary" (click)="irNuevaReserva()">
+          <span class="material-symbols-outlined">add</span>
+          Nueva Reserva
+        </button>
+      </div>
+
+      <!-- METRICS GRID -->
+      <section class="metrics-grid">
+        <div class="metric-card" *ngFor="let kpi of kpiCards">
+          <div class="metric-header">
+            <span class="metric-label">{{ kpi.label }}</span>
+            <span class="metric-icon" [innerHTML]="kpi.icon"></span>
+          </div>
+          <div class="metric-value">{{ kpi.value }}</div>
+          <div class="metric-sub">{{ kpi.sub }}</div>
+        </div>
+      </section>
+
+      <!-- CONTENT GRID -->
+      <div class="content-grid">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-main">
+
+          <!-- CHART CARD -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Perspectiva Operativa</h2>
+                <span class="card-subtitle">Crecimiento últimos 30 días</span>
+              </div>
+              <div class="chart-legend">
+                <span class="legend-dot legend-dot--active"></span>
+                <span class="legend-dot"></span>
+              </div>
+            </div>
+            <div class="bar-chart">
+              <div
+                class="bar"
+                *ngFor="let bar of barData"
+                [style.height.%]="bar.height"
+                [class.bar--peak]="bar.highlight"
+              ></div>
+            </div>
+          </div>
+
+          <!-- PROFESSIONALS TABLE -->
+          <div class="card">
+            <div class="table-header">
+              <h2 class="card-title">Lista de Profesionales</h2>
+              <button class="btn-link">Exportar Reporte</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="pro-table">
+                <thead>
+                  <tr>
+                    <th>Profesional</th>
+                    <th>Especialidad</th>
+                    <th>Estado</th>
+                    <th class="th-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="pro-row" *ngFor="let pro of profesionales">
+                    <td>
+                      <div class="pro-cell">
+                        <div class="pro-avatar">
+                          <img [src]="pro.avatar" [alt]="pro.nombre" />
+                        </div>
+                        <div>
+                          <div class="pro-name">{{ pro.nombre }}</div>
+                          <div class="pro-role">{{ pro.rol }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="td-specialty">{{ pro.especialidad }}</td>
+                    <td>
+                      <div class="status-cell">
+                        <span class="status-dot"
+                          [class.status-dot--active]="pro.estado === 'activo'"
+                          [class.status-dot--away]="pro.estado === 'permiso'">
+                        </span>
+                        <span class="status-label">{{ pro.estadoLabel }}</span>
+                      </div>
+                    </td>
+                    <td class="td-right">
+                      <button class="icon-btn" aria-label="Editar">
+                        <span class="material-symbols-outlined">edit</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: SERVICE CATALOG -->
+        <div class="col-side">
+          <div class="card catalog-card">
+            <div class="catalog-header">
+              <h2 class="card-title">Catálogo de Servicios</h2>
+              <span class="card-subtitle">Ofertas Actuales</span>
+            </div>
+            <ul class="service-list">
+              <li class="service-item" *ngFor="let svc of servicios">
+                <div class="service-info">
+                  <span class="service-name">{{ svc.nombre }}</span>
+                  <span class="service-desc">{{ svc.descripcion }}</span>
+                </div>
+                <div class="service-meta">
+                  <span class="service-price">{{ svc.precio }}</span>
+                  <span class="service-duration">{{ svc.tiempo }}</span>
+                </div>
+              </li>
+            </ul>
+            <div class="catalog-footer">
+              <button class="btn-add-service">
+                <span class="material-symbols-outlined">add_circle</span>
+                Añadir Nuevo Servicio
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMO BANNER -->
+      <section class="promo-banner">
+        <div class="promo-overlay"></div>
+        <img
+          class="promo-bg"
+          src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&q=60"
+          alt="Interior de spa de lujo"
+        />
+        <div class="promo-content">
+          <span class="promo-tag">Expansión de Verano</span>
+          <h2 class="promo-title">Prepara el Santuario para la Gala de Verano.</h2>
+          <p class="promo-body">
+            Nuevas categorías de servicio y asignaciones de personal están
+            disponibles para la próxima temporada alta.
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>

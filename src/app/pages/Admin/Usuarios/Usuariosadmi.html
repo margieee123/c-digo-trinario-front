@@ -1,0 +1,423 @@
+<!-- pages/admin/Usuarios/Usuariosadmi.html -->
+<div class="cli-shell">
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="cli-header">
+    <div class="header-left">
+      <span class="brand-name">SpaApp</span>
+    </div>
+    <nav class="main-nav">
+      <a class="nav-link" [routerLink]="['/admin/inicio']">Inicio</a>
+      <a class="nav-link" [routerLink]="['/admin/agenda']">Agenda</a>
+      <a class="nav-link" [routerLink]="['/admin/servicios']">Servicios</a>
+      <a class="nav-link active">Usuarios</a>
+      <a class="nav-link" [routerLink]="['/admin/finanzas']">Facturación</a>
+      <a class="nav-link" [routerLink]="['/admin/configuracion']">Configuración</a>
+    </nav>
+    <div class="header-right">
+      <button class="notif-btn" aria-label="Notificaciones">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
+      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="cli-main">
+
+    <!-- HERO -->
+    <header class="page-hero">
+      <div class="hero-text">
+        <h1 class="page-title">Gestión de Usuarios</h1>
+        <p class="page-sub">Panel de Control Administrativo &bull; Directorio Central</p>
+      </div>
+      <div class="hero-actions">
+        <div class="search-hero">
+          <span class="material-symbols-outlined sh-icon">search</span>
+          <input type="text" placeholder="Buscar por nombre o ID..." class="sh-input" />
+        </div>
+        <!-- Botón principal: abre modal según tab activo -->
+        <button
+          class="btn-add-user"
+          (click)="tabActivo === 'clientes' ? openAddCliente() : openAddEspecialista()">
+          <span class="material-symbols-outlined">person_add</span>
+          {{ tabActivo === 'clientes' ? 'Añadir Cliente' : 'Añadir Especialista' }}
+        </button>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <span class="stat-label">{{ stat.label }}</span>
+        <div class="stat-bottom">
+          <span class="stat-value" [class.stat-value--gold]="stat.gold">{{ stat.value }}</span>
+          <span class="stat-badge" *ngIf="stat.badge">{{ stat.badge }}</span>
+          <span class="stat-note" *ngIf="stat.note">{{ stat.note }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.tab-btn--active]="tabActivo === 'clientes'" (click)="tabActivo = 'clientes'">
+        Directorio de Clientes
+        <span class="tab-badge">{{ clientes.length }}</span>
+      </button>
+      <button class="tab-btn" [class.tab-btn--active]="tabActivo === 'equipo'" (click)="tabActivo = 'equipo'">
+        Equipo de Especialistas
+        <span class="tab-badge">{{ especialistas.length }}</span>
+      </button>
+    </div>
+
+    <!-- ── TAB: CLIENTES ── -->
+    <div *ngIf="tabActivo === 'clientes'">
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr class="table-head-row">
+              <th class="th">Cliente</th>
+              <th class="th">Email</th>
+              <th class="th">Teléfono</th>
+              <th class="th">Membresía</th>
+              <th class="th">Última Visita</th>
+              <th class="th th-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-row" *ngFor="let c of clientes">
+              <td class="td">
+                <div class="user-cell">
+                  <div class="user-avatar">
+                    <img [src]="c.avatar" [alt]="c.nombre" />
+                  </div>
+                  <div>
+                    <p class="user-name">{{ c.nombre }}</p>
+                    <p class="user-id">ID: {{ c.id }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="td td-muted">{{ c.email }}</td>
+              <td class="td td-muted">{{ c.telefono }}</td>
+              <td class="td">
+                <span class="mem-badge" [ngClass]="'mem-badge--' + c.tier">{{ c.tierLabel }}</span>
+              </td>
+              <td class="td td-muted">{{ c.ultimaVisita }}</td>
+              <td class="td td-right">
+                <div class="row-actions">
+                  <button class="action-btn action-btn--edit" (click)="openEditCliente(c)" title="Editar cliente">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button class="action-btn action-btn--delete" (click)="openConfirmDeleteCliente(c)" title="Eliminar cliente">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Sin resultados -->
+            <tr *ngIf="clientes.length === 0">
+              <td colspan="6" class="empty-row">
+                <span class="material-symbols-outlined">person_off</span>
+                No hay clientes registrados
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer">
+          <p class="pagination-info">Mostrando {{ clientes.length }} clientes</p>
+          <div class="pagination">
+            <button class="page-btn page-btn--nav">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button class="page-btn page-btn--active">1</button>
+            <button class="page-btn page-btn--nav">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: EQUIPO ── -->
+    <div *ngIf="tabActivo === 'equipo'">
+      <div class="team-grid">
+        <div
+          class="specialist-card"
+          *ngFor="let esp of especialistas"
+          [class.specialist-card--active]="esp.estado === 'activo'"
+          [class.specialist-card--rest]="esp.estado === 'descanso'">
+
+          <div class="spec-top">
+            <div class="spec-avatar">
+              <img [src]="esp.avatar" [alt]="esp.nombre" />
+            </div>
+            <span class="spec-badge"
+              [class.spec-badge--active]="esp.estado === 'activo'"
+              [class.spec-badge--rest]="esp.estado !== 'activo'">
+              {{ esp.estadoLabel }}
+            </span>
+          </div>
+
+          <p class="spec-nombre">{{ esp.nombre }}</p>
+          <p class="spec-rol">{{ esp.rol }}</p>
+          <div class="spec-info">
+            <span class="material-symbols-outlined spec-info-icon">{{ esp.infoIcon }}</span>
+            <span>{{ esp.infoText }}</span>
+          </div>
+
+          <!-- Acciones sobre tarjeta -->
+          <div class="spec-actions">
+            <button class="action-btn action-btn--edit" (click)="openEditEspecialista(esp)" title="Editar">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="action-btn action-btn--delete" (click)="openConfirmDeleteEspecialista(esp)" title="Eliminar">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Añadir especialista -->
+        <div class="specialist-card specialist-card--add" (click)="openAddEspecialista()">
+          <div class="add-icon-wrap">
+            <span class="material-symbols-outlined">add</span>
+          </div>
+          <p class="add-label">Añadir Especialista</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL — CREAR / EDITAR USUARIO
+══════════════════════════════════════════════════════ -->
+<div
+  class="modal-backdrop"
+  [class.open]="showUserModal"
+  (click)="closeUserModal()"
+  role="dialog"
+  aria-modal="true">
+
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">
+          {{ isEditing ? 'Editar ' : 'Nuevo ' }}{{ form.tipo === 'cliente' ? 'Cliente' : 'Especialista' }}
+        </span>
+        <h2 class="modal__title">
+          {{ isEditing ? 'Modificar Usuario' : 'Añadir Usuario' }}
+        </h2>
+      </div>
+      <button class="modal__close" (click)="closeUserModal()" aria-label="Cerrar">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal__body">
+
+      <!-- Selector de tipo (solo en creación) -->
+      <div class="tipo-toggle" *ngIf="!isEditing">
+        <button
+          class="tipo-btn"
+          [class.tipo-btn--active]="form.tipo === 'cliente'"
+          (click)="form.tipo = 'cliente'">
+          <span class="material-symbols-outlined">person</span>
+          Cliente
+        </button>
+        <button
+          class="tipo-btn"
+          [class.tipo-btn--active]="form.tipo === 'especialista'"
+          (click)="form.tipo = 'especialista'">
+          <span class="material-symbols-outlined">spa</span>
+          Especialista
+        </button>
+      </div>
+
+      <div class="form-grid form-grid--2col">
+
+        <!-- ── Campos comunes ── -->
+
+        <!-- Nombre -->
+        <div class="form-group form-group--full">
+          <label class="form-label" for="userName">Nombre Completo <span class="req">*</span></label>
+          <input
+            class="form-input"
+            id="userName"
+            type="text"
+            placeholder="ej. Elena Rodríguez"
+            [(ngModel)]="form.nombre" />
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="userEmail">Email <span class="req">*</span></label>
+          <div class="form-input-icon-wrap">
+            <span class="form-input-icon material-symbols-outlined">mail</span>
+            <input
+              class="form-input"
+              id="userEmail"
+              type="email"
+              placeholder="usuario@email.com"
+              [(ngModel)]="form.email" />
+          </div>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label class="form-label" for="userTel">Teléfono</label>
+          <div class="form-input-icon-wrap">
+            <span class="form-input-icon material-symbols-outlined">call</span>
+            <input
+              class="form-input"
+              id="userTel"
+              type="tel"
+              placeholder="+34 600 000 000"
+              [(ngModel)]="form.telefono" />
+          </div>
+        </div>
+
+        <!-- Avatar URL -->
+        <div class="form-group form-group--full">
+          <label class="form-label" for="userAvatar">URL de foto (opcional)</label>
+          <div class="form-input-icon-wrap">
+            <span class="form-input-icon material-symbols-outlined">image</span>
+            <input
+              class="form-input"
+              id="userAvatar"
+              type="url"
+              placeholder="https://..."
+              [(ngModel)]="form.avatar" />
+          </div>
+        </div>
+
+        <!-- ── Campos de CLIENTE ── -->
+        <ng-container *ngIf="form.tipo === 'cliente'">
+
+          <div class="form-divider form-group--full">
+            <span>Datos de membresía</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="userTier">Membresía <span class="req">*</span></label>
+            <select class="form-select" id="userTier" [(ngModel)]="form.tier">
+              <option value="">Seleccionar…</option>
+              <option *ngFor="let t of tierOpciones" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="userVisita">Última Visita</label>
+            <div class="form-input-icon-wrap">
+              <span class="form-input-icon material-symbols-outlined">calendar_today</span>
+              <input
+                class="form-input"
+                id="userVisita"
+                type="text"
+                placeholder="ej. 15 Nov, 2024"
+                [(ngModel)]="form.ultimaVisita" />
+            </div>
+          </div>
+
+        </ng-container>
+
+        <!-- ── Campos de ESPECIALISTA ── -->
+        <ng-container *ngIf="form.tipo === 'especialista'">
+
+          <div class="form-divider form-group--full">
+            <span>Datos profesionales</span>
+          </div>
+
+          <div class="form-group form-group--full">
+            <label class="form-label" for="userRol">Especialidad / Rol <span class="req">*</span></label>
+            <select class="form-select" id="userRol" [(ngModel)]="form.rol">
+              <option value="">Seleccionar…</option>
+              <option *ngFor="let r of rolOpciones" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="userEstado">Estado <span class="req">*</span></label>
+            <select class="form-select" id="userEstado" [(ngModel)]="form.estado">
+              <option value="">Seleccionar…</option>
+              <option *ngFor="let e of estadoOpciones" [value]="e.value">{{ e.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="userInfo">Info de disponibilidad</label>
+            <input
+              class="form-input"
+              id="userInfo"
+              type="text"
+              placeholder="ej. Próxima cita: 14:00"
+              [(ngModel)]="form.infoText" />
+          </div>
+
+        </ng-container>
+
+      </div>
+    </div><!-- /.modal__body -->
+
+    <!-- Footer -->
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="closeUserModal()">Cancelar</button>
+      <button class="btn-primary" (click)="submitForm()">
+        <span class="material-symbols-outlined">save</span>
+        {{ isEditing ? 'Guardar Cambios' : 'Crear Usuario' }}
+      </button>
+    </div>
+
+  </div><!-- /.modal -->
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL — CONFIRMAR ELIMINAR
+══════════════════════════════════════════════════════ -->
+<div
+  class="modal-backdrop"
+  [class.open]="showConfirmModal"
+  (click)="closeConfirmModal()"
+  role="alertdialog"
+  aria-modal="true">
+
+  <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog__icon">
+      <span class="material-symbols-outlined">person_remove</span>
+    </div>
+    <h3 class="confirm-dialog__title">Eliminar Usuario</h3>
+    <p class="confirm-dialog__text">
+      ¿Está seguro de que desea eliminar a <strong>"{{ deletingNombre }}"</strong>?
+      Esta acción no se puede deshacer.
+    </p>
+    <div class="confirm-dialog__actions">
+      <button class="btn-ghost" (click)="closeConfirmModal()">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()">
+        <span class="material-symbols-outlined">delete</span>
+        Eliminar
+      </button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══ TOASTS ══ -->
+<div class="toast-container">
+  <div
+    class="toast"
+    *ngFor="let t of toasts; trackBy: trackToast"
+    [class.toast--success]="t.type === 'success'"
+    [class.toast--error]="t.type === 'error'">
+    <span class="material-symbols-outlined">{{ t.icon }}</span>
+    {{ t.message }}
+  </div>
+</div>

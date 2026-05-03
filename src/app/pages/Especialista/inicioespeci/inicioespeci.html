@@ -1,0 +1,216 @@
+<div class="esp-shell">
+
+  <!-- HEADER -->
+  <header class="esp-header">
+    <div class="header-left">
+      <h1 class="brand-name">SpaApp</h1>
+      <div class="search-box">
+        <span class="material-symbols-outlined search-ic">search</span>
+        <input type="text" placeholder="Buscar..." class="search-input" />
+      </div>
+    </div>
+
+    <nav class="main-nav">
+      <a class="nav-link active" href="#">Dashboard</a>
+      <a class="nav-link" href="#">Agenda</a>
+      <a class="nav-link" href="#">Servicios</a>
+      <a class="nav-link" href="#">Clientes</a>
+      <a class="nav-link" href="#">Finanzas</a>
+      <a class="nav-link" href="#">Configuración</a>
+    </nav>
+
+    <div class="header-right">
+      <button class="notif-btn">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="avatar-wrap">
+        <div class="avatar-initials">{{ iniciales }}</div>
+        <span class="material-symbols-outlined avatar-ic">person</span>
+      </div>
+      <button class="btn-cerrar-sesion" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="esp-main">
+    <div class="page-wrapper">
+
+      <!-- PAGE TITLE ROW -->
+      <div class="page-title-row">
+        <div>
+          <span class="eyebrow">Vista del Terapeuta</span>
+          <h2 class="page-title">Buenos días, <em>{{ nombre }}</em></h2>
+        </div>
+        <button class="btn-primary">
+          <span class="material-symbols-outlined">add</span>
+          Reserva Manual
+        </button>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats">
+          <div class="stat-info">
+            <p class="stat-label">{{ s.label }}</p>
+            <p class="stat-value">{{ s.valor }}</p>
+          </div>
+          <div class="stat-icon">
+            <span class="material-symbols-outlined">{{ s.icono }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT GRID -->
+      <div class="content-grid">
+
+        <!-- LEFT: AGENDA -->
+        <section class="agenda-col">
+          <div class="agenda-header">
+            <h3 class="section-title">Horario de Hoy</h3>
+            <div class="view-toggle">
+              <button class="toggle-btn active">Diario</button>
+              <button class="toggle-btn">Semanal</button>
+            </div>
+          </div>
+
+          <div class="appt-list">
+
+            <ng-container *ngFor="let cita of agenda">
+
+              <!-- Cita activa (EN PROCESO) -->
+              <div class="appt-card appt-active" *ngIf="cita.actual && !cita.descanso">
+                <div class="appt-time">
+                  <span class="appt-hour highlight">{{ cita.hora }}</span>
+                  <span class="appt-dur">{{ cita.duracion }}</span>
+                </div>
+                <div class="appt-divider"></div>
+                <div class="appt-info">
+                  <h4 class="appt-service">{{ cita.servicio }}</h4>
+                  <p class="appt-meta">Cliente: {{ cita.cliente }} &bull; {{ cita.notas }}</p>
+                </div>
+                <div class="appt-actions">
+                  <span class="badge badge-active">En Proceso</span>
+                  <button class="icon-btn">
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cita pendiente -->
+              <div class="appt-card appt-pending" *ngIf="!cita.actual && !cita.descanso">
+                <div class="appt-time">
+                  <span class="appt-hour">{{ cita.hora }}</span>
+                  <span class="appt-dur">{{ cita.duracion }}</span>
+                </div>
+                <div class="appt-divider"></div>
+                <div class="appt-info">
+                  <h4 class="appt-service">{{ cita.servicio }}</h4>
+                  <p class="appt-meta">Cliente: {{ cita.cliente }} &bull; {{ cita.notas }}</p>
+                </div>
+                <div class="appt-actions">
+                  <span class="badge badge-pending">Pendiente</span>
+                  <button class="btn-start">Iniciar Sesión</button>
+                </div>
+              </div>
+
+              <!-- Descanso -->
+              <div class="appt-card appt-break" *ngIf="cita.descanso">
+                <div class="appt-time">
+                  <span class="appt-hour muted">{{ cita.hora }}</span>
+                  <span class="appt-dur">{{ cita.duracion }}</span>
+                </div>
+                <div class="appt-divider"></div>
+                <div class="appt-info break-info">
+                  <span class="material-symbols-outlined break-ic">free_breakfast</span>
+                  <span class="break-label">Descanso</span>
+                </div>
+              </div>
+
+            </ng-container>
+
+          </div>
+        </section>
+
+        <!-- RIGHT: PANEL CONTEXTUAL -->
+        <aside class="context-col">
+
+          <!-- Sesión Actual -->
+          <div class="ctx-card session-card">
+            <div class="session-bg-ic">
+              <span class="material-symbols-outlined">spa</span>
+            </div>
+            <h3 class="ctx-title">Sesión Actual</h3>
+            <div class="session-client">
+              <div class="client-avatar-wrap">
+                <span class="material-symbols-outlined client-avatar-ic">person</span>
+              </div>
+              <div>
+                <p class="client-name">{{ proximaCita.cliente }}</p>
+                <p class="client-badge">Miembro Premium</p>
+              </div>
+            </div>
+            <div class="session-progress">
+              <div class="progress-row">
+                <span class="prog-label">Progreso</span>
+                <span class="prog-value">24 / 60 min</span>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width: 40%"></div>
+              </div>
+            </div>
+            <button class="btn-outline-full">Marcar como Finalizada</button>
+          </div>
+
+          <!-- Notas Pre-Sesión -->
+          <div class="ctx-card notes-card">
+            <div class="ctx-card-header">
+              <span class="ctx-label">Notas Pre-Sesión</span>
+              <span class="material-symbols-outlined">edit_note</span>
+            </div>
+            <ul class="notes-list">
+              <li class="note-item note-done">
+                <span class="material-symbols-outlined note-ic">check_circle</span>
+                <p class="note-text">{{ proximaCita.nota }}</p>
+              </li>
+              <li class="note-item" *ngFor="let r of resenas">
+                <span class="material-symbols-outlined note-ic">radio_button_unchecked</span>
+                <p class="note-text">{{ r.texto }}</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Estado de Salas -->
+          <div class="ctx-card rooms-card">
+            <span class="ctx-label">Estado de Salas</span>
+            <div class="rooms-grid">
+              <div
+                class="room-item"
+                *ngFor="let d of disponibilidad"
+                [ngClass]="d.clase">
+                <span class="room-label">{{ d.dia }}</span>
+                <div class="room-status">
+                  <span class="room-dot"></span>
+                  <span class="room-slots">{{ d.slots }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="esp-footer">
+    <p class="footer-copy">© 2024 SpaApp Systems</p>
+    <div class="footer-links">
+      <a href="#" class="footer-link">Soporte</a>
+      <a href="#" class="footer-link">Protocolos</a>
+      <a href="#" class="footer-link">Privacidad</a>
+    </div>
+  </footer>
+
+</div>
