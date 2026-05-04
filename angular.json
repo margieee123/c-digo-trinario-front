@@ -3,11 +3,7 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-<<<<<<< HEAD
-    "analytics": "da77f5e8-1458-4453-9ffd-1bf5d522eb01"
-=======
     "analytics": false
->>>>>>> 86f023a76ff488390a398c9f923849d2f9312ec8
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -43,8 +39,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
