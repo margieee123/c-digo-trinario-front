@@ -1,19 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet, RouterModule } from '@angular/router'; // ← agrega RouterModule
 
 @Component({
   selector: 'app-inicioadmi',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterOutlet, RouterModule], // ← agrega RouterModule aquí
   templateUrl: './inicioadmi.html',
   styleUrls: ['./inicioadmi.css']
 })
 export class InicioAdmi implements OnInit {
 
+  constructor(private readonly router: Router) {}
+
+  irNuevaReserva() {
+    this.router.navigate(['/nueva-reserva']); // ← ya coincide con tu ruta
+  }
   nombre: string = '';
 
-  constructor(private router: Router) {}
 
   ngOnInit() {
     this.nombre = localStorage.getItem('nombre') || 'Administrador';

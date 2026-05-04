@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AlertComponent } from '../../components/alert/alert';
+import { AlertComponent } from '../../../components/alert/alert';
 
 @Component({
   selector: 'app-register',

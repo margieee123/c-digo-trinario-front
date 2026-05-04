@@ -1,0 +1,197 @@
+<!-- pages/admin/Agenda/Agendaadmi.html -->
+<div class="ag-shell">
+
+  <!-- ===== NAVBAR SpaApp ===== -->
+  <header class="ag-header">
+    <div class="header-left">
+      <span class="brand-name">SpaApp</span>
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Buscar..." class="search-input" />
+      </div>
+    </div>
+
+    <nav class="main-nav">
+      <a class="nav-link" [routerLink]="['/admin/inicio']">Dashboard</a>
+      <a class="nav-link active">Agenda</a>
+      <a class="nav-link" [routerLink]="['/admin/servicios']">Servicios</a>
+      <a class="nav-link" [routerLink]="['/admin/clientes']">Clientes</a>
+      <a class="nav-link" [routerLink]="['/admin/finanzas']">Finanzas</a>
+      <a class="nav-link" [routerLink]="['/admin/configuracion']">Configuración</a>
+    </nav>
+
+    <div class="header-right">
+      <button class="notif-btn" aria-label="Notificaciones">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="btn-nueva-reserva">Nueva Reserva</button>
+      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
+      <span class="material-symbols-outlined user-icon-btn">account_circle</span>
+      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CANVAS ===== -->
+  <main class="ag-main">
+
+    <!-- LEFT PANEL: Pulse -->
+    <aside class="ag-aside">
+
+      <div class="pulse-card">
+        <div class="pulse-header">
+          <span class="pulse-eyebrow">Status Actual</span>
+          <h2 class="pulse-title">Pulse</h2>
+        </div>
+
+        <div class="pulse-stat">
+          <div>
+            <p class="pulse-label">Citas de Hoy</p>
+            <p class="pulse-value">{{ pulse.citasHoy }}</p>
+          </div>
+          <div class="pulse-mini-bar">
+            <div class="pulse-mini-fill"></div>
+          </div>
+        </div>
+
+        <div class="pulse-stat">
+          <div>
+            <p class="pulse-label">Ingresos Estimados</p>
+            <p class="pulse-value">{{ pulse.ingresos }}</p>
+          </div>
+          <span class="material-symbols-outlined pulse-trend">trending_up</span>
+        </div>
+
+        <div class="pulse-alert">
+          <p class="pulse-alert-label">
+            <span class="material-symbols-outlined">warning</span>
+            Sin Asignar
+          </p>
+          <p class="pulse-alert-value">
+            {{ pulse.sinAsignar }}
+            <span class="pulse-alert-sub">pacientes</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Lounge image card -->
+      <div class="lounge-card">
+        <img
+          src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=600&q=70"
+          alt="Lounge Oriente"
+          class="lounge-img" />
+        <div class="lounge-overlay"></div>
+        <div class="lounge-content">
+          <span class="lounge-eyebrow">Espacio Destacado</span>
+          <h3 class="lounge-name">Lounge Oriente</h3>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL: Agenda -->
+    <div class="ag-content">
+
+      <!-- Agenda Controls -->
+      <div class="agenda-controls">
+        <div class="controls-left">
+          <h2 class="agenda-title">Agenda Semanal</h2>
+          <div class="view-toggle">
+            <button class="toggle-btn toggle-btn--active">Semana</button>
+            <button class="toggle-btn">Día</button>
+          </div>
+        </div>
+        <div class="controls-right">
+          <button class="nav-arrow">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <span class="week-label">{{ semanaLabel }}</span>
+          <button class="nav-arrow">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Weekly Grid -->
+      <div class="weekly-grid">
+        <div class="therapist-col" *ngFor="let ter of terapeutas; let i = index"
+          [class.therapist-col--alt]="i % 2 !== 0">
+
+          <!-- Therapist header -->
+          <div class="col-header">
+            <p class="ter-nombre">{{ ter.nombre }}</p>
+            <p class="ter-rol">{{ ter.rol }}</p>
+          </div>
+
+          <!-- Appointments -->
+          <div class="col-body">
+            <ng-container *ngFor="let cita of ter.citas">
+
+              <!-- Free / Break slot -->
+              <div class="slot-free" *ngIf="cita.tipo === 'libre'">
+                {{ cita.label || 'Libre' }}
+              </div>
+
+              <!-- Appointment block -->
+              <div class="slot-appt"
+                *ngIf="cita.tipo === 'cita'"
+                [class.slot-appt--gold]="cita.color === 'gold'"
+                [class.slot-appt--dim]="cita.color === 'dim'">
+                <p class="slot-hora">{{ cita.hora }}</p>
+                <p class="slot-servicio">{{ cita.servicio }}</p>
+                <p class="slot-cliente">{{ cita.cliente }}</p>
+              </div>
+
+            </ng-container>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Stats -->
+      <div class="bottom-stats">
+
+        <!-- Donut occupancy -->
+        <div class="occ-card">
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 36 36">
+              <path class="donut-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke-dasharray="100,100" stroke-width="3" />
+              <path class="donut-ring"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke-dasharray="78,100" stroke-linecap="round" stroke-width="3" />
+            </svg>
+            <div class="donut-label">78%</div>
+          </div>
+          <div class="occ-info">
+            <span class="occ-eyebrow">Ocupación Semanal</span>
+            <h4 class="occ-title">Eficiencia de Cabinas</h4>
+            <p class="occ-desc">Actualmente operando con alta demanda en rituales húmedos y tratamientos de autor.</p>
+          </div>
+        </div>
+
+        <!-- Specialty distribution -->
+        <div class="dist-card">
+          <div class="dist-header">
+            <h4 class="dist-title">Distribución por Especialidad</h4>
+            <span class="material-symbols-outlined dist-more">more_horiz</span>
+          </div>
+          <div class="dist-bars">
+            <div class="dist-bar-item" *ngFor="let d of distribucion">
+              <div class="dist-bar-top">
+                <span class="dist-bar-label">{{ d.label }}</span>
+                <span class="dist-bar-pct">{{ d.pct }}%</span>
+              </div>
+              <div class="dist-track">
+                <div class="dist-fill" [style.width.%]="d.pct"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
