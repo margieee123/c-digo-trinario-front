@@ -1,38 +1,28 @@
-<!-- ══════════════════════════════════════════════════════
-     SpaApp — Servicios Admin | serviciosadmi.component.html
-     ══════════════════════════════════════════════════════ -->
-
-<!-- ══ TOP NAV ══ -->
 <header class="navbar">
   <nav class="navbar__inner">
     <div class="navbar__left">
       <span class="navbar__brand">SpaApp</span>
       <ul class="navbar__nav">
-        <li><a href="#">Inicio</a></li>
-        <li><a href="#">Agenda</a></li>
+        <li><a [routerLink]="['/dashboard/admin']">Inicio</a></li>
+        <li><a [routerLink]="['/dashboard/admin/agenda']">Agenda</a></li>
         <li><a class="active">Servicios</a></li>
-        <li><a href="#">Usuarios</a></li>
-        <li><a href="#">Facturación</a></li>
-        <li><a href="#">Configuración</a></li>
+        <li><a [routerLink]="['/dashboard/admin/usuarios']">Usuarios</a></li>
+        <li><a>Facturación</a></li>
+        <li><a>Configuración</a></li>
       </ul>
     </div>
     <div class="navbar__right">
       <button class="navbar__icon-btn" aria-label="Notificaciones">
         <span class="material-symbols-outlined">notifications</span>
       </button>
-      <div class="navbar__user-avatar">E</div>
-      <button class="navbar__icon-btn" aria-label="Cuenta">
-        <span class="material-symbols-outlined">account_circle</span>
-      </button>
+      <div class="navbar__user-avatar">A</div>
       <button class="navbar__logout-btn">Cerrar sesión</button>
     </div>
   </nav>
 </header>
 
-<!-- ══ MAIN ══ -->
 <main class="main">
 
-  <!-- Page Header -->
   <div class="page-header">
     <div class="page-header__meta">
       <span class="page-header__eyebrow">Catálogo de Lujo</span>
@@ -41,54 +31,22 @@
         Defina y organice el catálogo de experiencias de lujo de su santuario.
       </p>
     </div>
-    
     <button class="btn-primary" (click)="openAddModal()">
       <span class="material-symbols-outlined">add</span>
       Añadir Nuevo Servicio
     </button>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="filter-bar">
-    <div class="navbar__search">
-      <span class="material-symbols-outlined">search</span>
-      <input type="text" placeholder="Buscar…" />
-    </div>
-    <div class="filter-bar__tabs">
-      <button
-        *ngFor="let cat of categories"
-        class="filter-tab"
-        [class.active]="activeFilter === cat.value"
-        (click)="setFilter(cat.value)">
-        {{ cat.label }}
-      </button>
-    </div>
-    <div class="filter-bar__sort">
-      <span class="material-symbols-outlined">filter_list</span>
-      <select [ngModel]="sortKey" (ngModelChange)="setSort($event)">
-        <option value="recent">Ordenar por: Recientes</option>
-        <option value="price-high">Precio: Mayor a Menor</option>
-        <option value="price-low">Precio: Menor a Mayor</option>
-        <option value="duration">Duración</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Services Grid -->
   <div class="services-grid">
 
-    <!-- Empty State -->
     <div class="empty-state" *ngIf="pageItems.length === 0">
       <div class="empty-state__icon">
         <span class="material-symbols-outlined">spa</span>
       </div>
-      <h3 class="empty-state__title">Sin servicios en esta categoría</h3>
-      <p class="empty-state__text">
-        Añada un nuevo servicio o cambie el filtro activo para ver experiencias disponibles.
-      </p>
+      <h3 class="empty-state__title">Sin servicios registrados</h3>
+      <p class="empty-state__text">Añada un nuevo servicio para comenzar.</p>
     </div>
 
-    <!-- Service Card -->
     <article
       class="service-card"
       *ngFor="let svc of pageItems; trackBy: trackService">
@@ -97,16 +55,16 @@
         <img
           class="service-card__img"
           [src]="svc.imageUrl || placeholder"
-          [alt]="svc.name"
+          [alt]="svc.nombre"
           loading="lazy"
           (error)="onImgError($event)" />
         <div class="service-card__overlay"></div>
 
         <span
           class="service-card__status"
-          [class.service-card__status--active]="svc.active"
-          [class.service-card__status--inactive]="!svc.active">
-          {{ svc.active ? 'Activo' : 'Inactivo' }}
+          [class.service-card__status--active]="svc.estado === 'activo'"
+          [class.service-card__status--inactive]="svc.estado !== 'activo'">
+          {{ svc.estado === 'activo' ? 'Activo' : 'Inactivo' }}
         </span>
 
         <div class="service-card__actions">
@@ -128,33 +86,28 @@
       <div class="service-card__body">
         <div class="service-card__header">
           <div>
-            <span class="service-card__category">{{ capitalize(svc.category) }}</span>
-            <h3 class="service-card__title">{{ svc.name }}</h3>
+            <h3 class="service-card__title">{{ svc.nombre }}</h3>
+            <p class="service-card__description">{{ svc.descripcion }}</p>
           </div>
-          <span class="service-card__price">${{ svc.price | number }}</span>
+          <span class="service-card__price">${{ svc.precio | number }}</span>
         </div>
         <div class="service-card__meta">
           <div class="service-card__meta-item">
             <span class="material-symbols-outlined">schedule</span>
-            <span>{{ svc.duration }} MIN</span>
-          </div>
-          <div class="service-card__meta-item">
-            <span class="material-symbols-outlined">{{ svc.benefitIcon || 'spa' }}</span>
-            <span>{{ svc.benefit || '—' }}</span>
+            <span>{{ svc.duracionMinutos }} MIN</span>
           </div>
         </div>
       </div>
     </article>
 
-  </div><!-- /.services-grid -->
+  </div>
 
-  <!-- Pagination -->
   <div class="pagination">
     <p class="pagination__label">
-      Mostrando {{ showingCount }} de {{ totalCount }} experiencias exclusivas
+      Mostrando {{ showingCount }} de {{ totalCount }} servicios
     </p>
     <div class="pagination__controls">
-      <button class="btn-icon" (click)="prevPage()" [disabled]="currentPage === 0" aria-label="Anterior">
+      <button class="btn-icon" (click)="prevPage()" [disabled]="currentPage === 0">
         <span class="material-symbols-outlined">chevron_left</span>
       </button>
       <div class="pagination__dots">
@@ -162,22 +115,18 @@
           class="pagination__dot"
           *ngFor="let p of pageArray"
           [class.active]="p === currentPage"
-          (click)="goToPage(p)"
-          [attr.aria-label]="'Página ' + (p + 1)">
+          (click)="goToPage(p)">
         </button>
       </div>
-      <button class="btn-icon" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1" aria-label="Siguiente">
+      <button class="btn-icon" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
         <span class="material-symbols-outlined">chevron_right</span>
       </button>
     </div>
   </div>
 
-</main><!-- /.main -->
+</main>
 
-
-<!-- ══════════════════════════════════════════════════════
-     MODAL — Add / Edit Service
-     ══════════════════════════════════════════════════════ -->
+<!-- MODAL ADD/EDIT -->
 <div
   class="modal-backdrop"
   [class.open]="showServiceModal"
@@ -192,7 +141,7 @@
         <span class="modal__eyebrow">{{ isEditing ? 'Editar Servicio' : 'Nuevo Servicio' }}</span>
         <h2 class="modal__title">{{ isEditing ? 'Modificar Servicio' : 'Añadir Servicio' }}</h2>
       </div>
-      <button class="modal__close" (click)="closeServiceModal()" aria-label="Cerrar">
+      <button class="modal__close" (click)="closeServiceModal()">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
@@ -200,118 +149,39 @@
     <div class="modal__body">
       <div class="form-grid form-grid--2col">
 
-        <!-- Nombre -->
         <div class="form-group form-group--full">
-          <label class="form-label" for="serviceName">Nombre del Servicio</label>
-          <input
-            class="form-input"
-            id="serviceName"
-            type="text"
-            placeholder="ej. Masaje con Piedras Calientes"
-            [(ngModel)]="form.name" />
+          <label class="form-label">Nombre del Servicio</label>
+          <input class="form-input" type="text" placeholder="ej. Masaje Relajante" [(ngModel)]="form.nombre" />
         </div>
 
-        <!-- Categoría -->
         <div class="form-group">
-          <label class="form-label" for="serviceCategory">Categoría</label>
-          <select class="form-select" id="serviceCategory" [(ngModel)]="form.category">
-            <option value="">Seleccionar…</option>
-            <option value="masajes">Masajes</option>
-            <option value="faciales">Faciales</option>
-            <option value="corporales">Corporales</option>
-            <option value="rituales">Rituales</option>
-          </select>
-        </div>
-
-        <!-- Precio -->
-        <div class="form-group">
-          <label class="form-label" for="servicePrice">Precio (USD)</label>
+          <label class="form-label">Precio (USD)</label>
           <div class="form-input-icon-wrap">
             <span class="form-input-icon material-symbols-outlined">attach_money</span>
-            <input
-              class="form-input"
-              id="servicePrice"
-              type="number"
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-              [(ngModel)]="form.price" />
+            <input class="form-input" type="number" placeholder="0.00" min="0" step="0.01" [(ngModel)]="form.precio" />
           </div>
         </div>
 
-        <!-- Duración -->
         <div class="form-group">
-          <label class="form-label" for="serviceDuration">Duración (min)</label>
+          <label class="form-label">Duración (min)</label>
           <div class="form-input-icon-wrap">
             <span class="form-input-icon material-symbols-outlined">schedule</span>
-            <input
-              class="form-input"
-              id="serviceDuration"
-              type="number"
-              placeholder="60"
-              min="5"
-              step="5"
-              [(ngModel)]="form.duration" />
+            <input class="form-input" type="number" placeholder="60" min="5" step="5" [(ngModel)]="form.duracionMinutos" />
           </div>
         </div>
 
-        <!-- Beneficio -->
-        <div class="form-group">
-          <label class="form-label" for="serviceBenefit">Beneficio / Etiqueta</label>
-          <input
-            class="form-input"
-            id="serviceBenefit"
-            type="text"
-            placeholder="ej. RELAJACIÓN TOTAL"
-            [(ngModel)]="form.benefit" />
-        </div>
-
-        <!-- Ícono -->
-        <div class="form-group">
-          <label class="form-label" for="serviceBenefitIcon">Ícono (Material Symbol)</label>
-          <input
-            class="form-input"
-            id="serviceBenefitIcon"
-            type="text"
-            placeholder="ej. spa, psychology, water_drop"
-            [(ngModel)]="form.benefitIcon" />
-        </div>
-
-        <!-- Descripción -->
         <div class="form-group form-group--full">
-          <label class="form-label" for="serviceDescription">Descripción</label>
-          <textarea
-            class="form-textarea"
-            id="serviceDescription"
-            placeholder="Describe la experiencia de lujo…"
-            [(ngModel)]="form.description">
-          </textarea>
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" placeholder="Describe el servicio…" [(ngModel)]="form.descripcion"></textarea>
         </div>
 
-        <!-- URL imagen -->
         <div class="form-group form-group--full">
-          <label class="form-label" for="serviceImage">URL de imagen</label>
-          <input
-            class="form-input"
-            id="serviceImage"
-            type="url"
-            placeholder="https://…"
-            [(ngModel)]="form.imageUrl" />
+          <label class="form-label">URL de imagen</label>
+          <input class="form-input" type="url" placeholder="https://…" [(ngModel)]="form.imageUrl" />
         </div>
 
-        <!-- Toggle activo -->
-        <div class="form-group form-group--full">
-          <div class="form-toggle-row">
-            <span class="form-toggle-label">Servicio activo (visible para reservas)</span>
-            <label class="form-toggle">
-              <input type="checkbox" [(ngModel)]="form.active" />
-              <span class="form-toggle__track"></span>
-            </label>
-          </div>
-        </div>
-
-      </div><!-- /.form-grid -->
-    </div><!-- /.modal__body -->
+      </div>
+    </div>
 
     <div class="modal__footer">
       <button class="btn-ghost" (click)="closeServiceModal()">Cancelar</button>
@@ -321,13 +191,10 @@
       </button>
     </div>
 
-  </div><!-- /.modal -->
-</div><!-- /.modal-backdrop #serviceModal -->
+  </div>
+</div>
 
-
-<!-- ══════════════════════════════════════════════════════
-     MODAL — Confirm Delete
-     ══════════════════════════════════════════════════════ -->
+<!-- MODAL CONFIRMAR ELIMINAR -->
 <div
   class="modal-backdrop"
   [class.open]="showConfirmModal"
@@ -352,13 +219,9 @@
       </button>
     </div>
   </div>
-
 </div>
 
-
-<!-- ══════════════════════════════════════════════════════
-     TOASTS
-     ══════════════════════════════════════════════════════ -->
+<!-- TOASTS -->
 <div class="toast-container">
   <div
     class="toast"
@@ -370,8 +233,6 @@
   </div>
 </div>
 
-
-<!-- ══ FAB ══ -->
 <button class="fab" aria-label="Asistente">
   <span class="material-symbols-outlined">auto_awesome</span>
 </button>

@@ -11,13 +11,13 @@
 
     <!-- Centro: navegación -->
     <nav class="main-nav">
-      <a class="nav-link active">Inicio</a>
-      <a class="nav-link">Agenda</a>
-      <a class="nav-link">Servicios</a>
-      <a class="nav-link">Usuarios</a>
-      <a class="nav-link">Facturación</a>
-      <a class="nav-link">Configuración</a>
-    </nav>
+  <a class="nav-link active" [routerLink]="['/dashboard/admin']">Inicio</a>
+  <a class="nav-link" [routerLink]="['/dashboard/admin/agenda']">Agenda</a>
+  <a class="nav-link" [routerLink]="['/dashboard/admin/servicios']">Servicios</a>
+  <a class="nav-link" [routerLink]="['/dashboard/admin/usuarios']">Usuarios</a>
+  <a class="nav-link">Facturación</a>
+  <a class="nav-link">Configuración</a>
+</nav>
 
     <!-- Derecha: notif + avatar + cerrar sesión -->
     <div class="header-right">
