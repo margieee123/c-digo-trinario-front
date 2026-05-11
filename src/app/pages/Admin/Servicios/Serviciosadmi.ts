@@ -11,7 +11,7 @@ interface Servicio {
   precio: number;
   duracionMinutos: number;
   estado: string;
-  imageUrl?: string;
+  imagenUrl?: string;
 }
 
 interface Toast {
@@ -26,7 +26,7 @@ interface ServicioForm {
   descripcion: string;
   precio: number | null;
   duracionMinutos: number | null;
-  imageUrl: string;
+  imagenUrl: string;
 }
 
 @Component({
@@ -44,6 +44,9 @@ export class Serviciosadmi implements OnInit {
   services: Servicio[] = [];
   currentPage = 0;
   readonly itemsPerPage = 6;
+  isSubmitting = false;
+  busqueda: string = '';
+  mostrarInactivos: boolean = false;
 
   showServiceModal = false;
   showConfirmModal = false;
@@ -67,32 +70,40 @@ export class Serviciosadmi implements OnInit {
   }
 
   cargarServicios(): void {
-  const token = localStorage.getItem('token');
-  console.log('token al cargar:', token);
-  this.http.get<Servicio[]>(this.apiUrl, { headers: this.getHeaders() }).subscribe({
-    next: (data) => {
-      console.log('servicios cargados:', data);
-      this.services = [...data];
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error('error al cargar:', err);
-      this.showToast('Error al cargar servicios', 'error');
-    }
-  });
-}
-
- get pageItems(): Servicio[] {
-  console.log('pageItems - services.length:', this.services.length, 'currentPage:', this.currentPage);
-  const start = this.currentPage * this.itemsPerPage;
-  return this.services.slice(start, start + this.itemsPerPage);
-}
-
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.services.length / this.itemsPerPage));
+    this.http.get<Servicio[]>(this.apiUrl, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.services = [...data];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('error al cargar:', err);
+        this.showToast('Error al cargar servicios', 'error');
+      }
+    });
   }
 
-  get totalCount(): number { return this.services.length; }
+  get serviciosFiltrados(): Servicio[] {
+  let lista = this.mostrarInactivos
+    ? this.services.filter(s => s.estado === 'inactivo')
+    : this.services.filter(s => s.estado === 'activo');
+  if (!this.busqueda.trim()) return lista;
+  const q = this.busqueda.toLowerCase();
+  return lista.filter(s =>
+    s.nombre.toLowerCase().includes(q) ||
+    (s.descripcion?.toLowerCase().includes(q) ?? false)
+  );
+}
+
+  get pageItems(): Servicio[] {
+    const start = this.currentPage * this.itemsPerPage;
+    return this.serviciosFiltrados.slice(start, start + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.serviciosFiltrados.length / this.itemsPerPage));
+  }
+
+  get totalCount(): number { return this.serviciosFiltrados.length; }
   get showingCount(): number { return this.pageItems.length; }
   get pageArray(): number[] { return Array.from({ length: this.totalPages }, (_, i) => i); }
 
@@ -104,6 +115,7 @@ export class Serviciosadmi implements OnInit {
     this.isEditing = false;
     this.editingId = null;
     this.form = this.emptyForm();
+    this.isSubmitting = false;
     this.showServiceModal = true;
     document.body.style.overflow = 'hidden';
   }
@@ -111,12 +123,13 @@ export class Serviciosadmi implements OnInit {
   openEditModal(svc: Servicio): void {
     this.isEditing = true;
     this.editingId = svc.idServicio;
+    this.isSubmitting = false;
     this.form = {
       nombre: svc.nombre,
       descripcion: svc.descripcion,
       precio: svc.precio,
       duracionMinutos: svc.duracionMinutos,
-      imageUrl: svc.imageUrl || ''
+      imagenUrl: svc.imagenUrl || ''
     };
     this.showServiceModal = true;
     document.body.style.overflow = 'hidden';
@@ -124,45 +137,51 @@ export class Serviciosadmi implements OnInit {
 
   closeServiceModal(): void {
     this.showServiceModal = false;
+    this.isSubmitting = false;
     document.body.style.overflow = '';
   }
 
- submitForm(): void {
-  console.log('submitForm ejecutado', this.form);
-  if (!this.form.nombre || !this.form.precio || !this.form.duracionMinutos) {
-    this.showToast('Complete los campos requeridos', 'error');
-    return;
-  }
+  submitForm(): void {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+
+    if (!this.form.nombre || !this.form.precio || !this.form.duracionMinutos) {
+      this.showToast('Complete los campos requeridos', 'error');
+      this.isSubmitting = false;
+      return;
+    }
 
     const body = {
       nombre: this.form.nombre.trim(),
       descripcion: this.form.descripcion.trim(),
       precio: this.form.precio,
-      duracionMinutos: this.form.duracionMinutos
+      duracionMinutos: this.form.duracionMinutos,
+      imagenUrl: this.form.imagenUrl
     };
 
     if (this.isEditing && this.editingId) {
       this.http.put<Servicio>(`${this.apiUrl}/${this.editingId}`, body, { headers: this.getHeaders() }).subscribe({
-        next: (updated) => {
-          updated.imageUrl = this.form.imageUrl;
-          const idx = this.services.findIndex(s => s.idServicio === this.editingId);
-          if (idx !== -1) this.services[idx] = updated;
-          this.services = [...this.services];
+        next: () => {
           this.showToast('Servicio actualizado correctamente', 'success');
           this.closeServiceModal();
+          this.cargarServicios();
         },
-        error: () => this.showToast('Error al actualizar servicio', 'error')
+        error: () => {
+          this.showToast('Error al actualizar servicio', 'error');
+          this.isSubmitting = false;
+        }
       });
     } else {
       this.http.post<Servicio>(this.apiUrl, body, { headers: this.getHeaders() }).subscribe({
-        next: (created) => {
-          created.imageUrl = this.form.imageUrl;
-          this.services = [created, ...this.services];
-          this.currentPage = 0;
+        next: () => {
           this.showToast('Servicio creado exitosamente', 'success');
           this.closeServiceModal();
+          this.cargarServicios();
         },
-        error: () => this.showToast('Error al crear servicio', 'error')
+        error: () => {
+          this.showToast('Error al crear servicio', 'error');
+          this.isSubmitting = false;
+        }
       });
     }
   }
@@ -183,15 +202,12 @@ export class Serviciosadmi implements OnInit {
     if (!this.deletingId) return;
     this.http.delete(`${this.apiUrl}/${this.deletingId}`, { headers: this.getHeaders() }).subscribe({
       next: () => {
-        this.services = this.services.filter(s => s.idServicio !== this.deletingId);
-        if (this.currentPage >= this.totalPages) {
-          this.currentPage = Math.max(0, this.totalPages - 1);
-        }
-        this.showToast(`"${this.deletingName}" eliminado`, 'error');
+        this.showToast(`"${this.deletingName}" desactivado`, 'info');
         this.deletingId = null;
         this.closeConfirmModal();
+        this.cargarServicios();
       },
-      error: () => this.showToast('Error al eliminar servicio', 'error')
+      error: () => this.showToast('Error al desactivar servicio', 'error')
     });
   }
 
@@ -210,6 +226,6 @@ export class Serviciosadmi implements OnInit {
   trackService(_: number, s: Servicio): string { return s.idServicio.toString(); }
 
   private emptyForm(): ServicioForm {
-    return { nombre: '', descripcion: '', precio: null, duracionMinutos: null, imageUrl: '' };
+    return { nombre: '', descripcion: '', precio: null, duracionMinutos: null, imagenUrl: '' };
   }
 }

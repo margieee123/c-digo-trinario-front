@@ -38,6 +38,8 @@ export class Usuariosadmi implements OnInit {
   private apiUrl = 'http://localhost:8080/usuarios';
   nombre: string = '';
   tabActivo: string = 'clientes';
+  busqueda: string = '';
+  mostrarInactivos: boolean = false;
 
   clientes: Usuario[] = [];
   especialistas: Usuario[] = [];
@@ -58,11 +60,6 @@ export class Usuariosadmi implements OnInit {
     { value: 'terapeuta', label: 'Terapeuta' },
     { value: 'recepcionista', label: 'Recepcionista' },
     { value: 'administrador', label: 'Administrador' }
-  ];
-
-  readonly estadoOpciones = [
-    { value: 'activo', label: 'Activo' },
-    { value: 'inactivo', label: 'Inactivo' }
   ];
 
   constructor(
@@ -90,6 +87,32 @@ export class Usuariosadmi implements OnInit {
       },
       error: () => this.showToast('Error al cargar usuarios', 'error')
     });
+  }
+
+  get clientesFiltrados(): Usuario[] {
+    let lista = this.mostrarInactivos
+      ? this.clientes
+      : this.clientes.filter(u => u.estado === 'activo');
+    if (!this.busqueda.trim()) return lista;
+    const q = this.busqueda.toLowerCase();
+    return lista.filter(c =>
+      c.nombre.toLowerCase().includes(q) ||
+      c.correo.toLowerCase().includes(q) ||
+      c.id.toString().includes(q)
+    );
+  }
+
+  get especialistasFiltrados(): Usuario[] {
+    let lista = this.mostrarInactivos
+      ? this.especialistas
+      : this.especialistas.filter(u => u.estado === 'activo');
+    if (!this.busqueda.trim()) return lista;
+    const q = this.busqueda.toLowerCase();
+    return lista.filter(e =>
+      e.nombre.toLowerCase().includes(q) ||
+      e.correo.toLowerCase().includes(q) ||
+      e.id.toString().includes(q)
+    );
   }
 
   cerrarSesion(): void {
@@ -171,40 +194,6 @@ export class Usuariosadmi implements OnInit {
         error: () => this.showToast('Error al crear usuario', 'error')
       });
     }
-  }
-
-  openConfirmDeleteCliente(u: Usuario): void {
-    this.deletingId = u.id;
-    this.deletingNombre = u.nombre;
-    this.deletingTipo = 'cliente';
-    this.showConfirmModal = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  openConfirmDeleteEspecialista(u: Usuario): void {
-    this.deletingId = u.id;
-    this.deletingNombre = u.nombre;
-    this.deletingTipo = 'especialista';
-    this.showConfirmModal = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  closeConfirmModal(): void {
-    this.showConfirmModal = false;
-    document.body.style.overflow = '';
-  }
-
-  confirmDelete(): void {
-    if (!this.deletingId) return;
-    this.http.delete(`${this.apiUrl}/${this.deletingId}`, { headers: this.getHeaders() }).subscribe({
-      next: () => {
-        this.showToast(`"${this.deletingNombre}" eliminado`, 'error');
-        this.cargarUsuarios();
-        this.deletingId = null;
-        this.closeConfirmModal();
-      },
-      error: () => this.showToast('Error al eliminar usuario', 'error')
-    });
   }
 
   cambiarEstado(u: Usuario): void {

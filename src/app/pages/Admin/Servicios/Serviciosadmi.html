@@ -37,6 +37,18 @@
     </button>
   </div>
 
+  <!-- Buscador y filtro -->
+  <div class="filter-bar">
+    <div class="navbar__search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" placeholder="Buscar por nombre o descripción…" [(ngModel)]="busqueda" />
+    </div>
+    <label class="toggle-inactivos">
+      <input type="checkbox" [(ngModel)]="mostrarInactivos" />
+      Ver inactivos
+    </label>
+  </div>
+
   <div class="services-grid">
 
     <div class="empty-state" *ngIf="pageItems.length === 0">
@@ -54,7 +66,7 @@
       <div class="service-card__image-wrap">
         <img
           class="service-card__img"
-          [src]="svc.imageUrl || placeholder"
+          [src]="svc.imagenUrl || placeholder"
           [alt]="svc.nombre"
           loading="lazy"
           (error)="onImgError($event)" />
@@ -77,8 +89,8 @@
           <button
             class="service-card__action-btn service-card__action-btn--delete"
             (click)="openConfirmDelete(svc)"
-            aria-label="Eliminar">
-            <span class="material-symbols-outlined">delete</span>
+            aria-label="Desactivar">
+            <span class="material-symbols-outlined">block</span>
           </button>
         </div>
       </div>
@@ -177,15 +189,15 @@
 
         <div class="form-group form-group--full">
           <label class="form-label">URL de imagen</label>
-          <input class="form-input" type="url" placeholder="https://…" [(ngModel)]="form.imageUrl" />
+          <input class="form-input" type="url" placeholder="https://…" [(ngModel)]="form.imagenUrl" />
         </div>
 
       </div>
     </div>
 
     <div class="modal__footer">
-      <button class="btn-ghost" (click)="closeServiceModal()">Cancelar</button>
-      <button class="btn-primary" (click)="submitForm()">
+      <button type="button" class="btn-ghost" (click)="closeServiceModal()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="submitForm()">
         <span class="material-symbols-outlined">save</span>
         {{ isEditing ? 'Actualizar Servicio' : 'Guardar Servicio' }}
       </button>
@@ -194,7 +206,7 @@
   </div>
 </div>
 
-<!-- MODAL CONFIRMAR ELIMINAR -->
+<!-- MODAL CONFIRMAR DESACTIVAR -->
 <div
   class="modal-backdrop"
   [class.open]="showConfirmModal"
@@ -204,18 +216,18 @@
 
   <div class="confirm-dialog" (click)="$event.stopPropagation()">
     <div class="confirm-dialog__icon">
-      <span class="material-symbols-outlined">delete_forever</span>
+      <span class="material-symbols-outlined">block</span>
     </div>
-    <h3 class="confirm-dialog__title">Eliminar Servicio</h3>
+    <h3 class="confirm-dialog__title">Desactivar Servicio</h3>
     <p class="confirm-dialog__text">
-      ¿Está seguro de que desea eliminar <strong>"{{ deletingName }}"</strong>?
-      Esta acción no se puede deshacer.
+      ¿Está seguro de que desea desactivar <strong>"{{ deletingName }}"</strong>?
+      El servicio no estará disponible para reservas.
     </p>
     <div class="confirm-dialog__actions">
       <button class="btn-ghost" (click)="closeConfirmModal()">Cancelar</button>
       <button class="btn-danger" (click)="confirmDelete()">
-        <span class="material-symbols-outlined">delete</span>
-        Eliminar
+        <span class="material-symbols-outlined">block</span>
+        Desactivar
       </button>
     </div>
   </div>
@@ -232,7 +244,3 @@
     {{ t.message }}
   </div>
 </div>
-
-<button class="fab" aria-label="Asistente">
-  <span class="material-symbols-outlined">auto_awesome</span>
-</button>

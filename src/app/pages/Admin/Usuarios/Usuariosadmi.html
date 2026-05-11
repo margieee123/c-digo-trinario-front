@@ -32,8 +32,12 @@
       <div class="hero-actions">
         <div class="search-hero">
           <span class="material-symbols-outlined sh-icon">search</span>
-          <input type="text" placeholder="Buscar por nombre o ID..." class="sh-input" />
+          <input type="text" placeholder="Buscar por nombre, correo o ID..." class="sh-input" [(ngModel)]="busqueda" />
         </div>
+        <label class="toggle-inactivos">
+          <input type="checkbox" [(ngModel)]="mostrarInactivos" />
+          Ver inactivos
+        </label>
         <button class="btn-add-user"
           (click)="tabActivo === 'clientes' ? openAddCliente() : openAddEspecialista()">
           <span class="material-symbols-outlined">person_add</span>
@@ -45,11 +49,11 @@
     <div class="tabs-bar">
       <button class="tab-btn" [class.tab-btn--active]="tabActivo === 'clientes'" (click)="tabActivo = 'clientes'">
         Directorio de Clientes
-        <span class="tab-badge">{{ clientes.length }}</span>
+        <span class="tab-badge">{{ clientesFiltrados.length }}</span>
       </button>
       <button class="tab-btn" [class.tab-btn--active]="tabActivo === 'equipo'" (click)="tabActivo = 'equipo'">
         Equipo de Especialistas
-        <span class="tab-badge">{{ especialistas.length }}</span>
+        <span class="tab-badge">{{ especialistasFiltrados.length }}</span>
       </button>
     </div>
 
@@ -67,7 +71,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="table-row" *ngFor="let c of clientes">
+            <tr class="table-row" *ngFor="let c of clientesFiltrados">
               <td class="td">
                 <div class="user-cell">
                   <div class="user-avatar-letter">{{ c.nombre.charAt(0).toUpperCase() }}</div>
@@ -93,13 +97,10 @@
                   <button class="action-btn" (click)="cambiarEstado(c)" title="Cambiar estado">
                     <span class="material-symbols-outlined">{{ c.estado === 'activo' ? 'block' : 'check_circle' }}</span>
                   </button>
-                  <button class="action-btn action-btn--delete" (click)="openConfirmDeleteCliente(c)" title="Eliminar">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
                 </div>
               </td>
             </tr>
-            <tr *ngIf="clientes.length === 0">
+            <tr *ngIf="clientesFiltrados.length === 0">
               <td colspan="5" class="empty-row">
                 <span class="material-symbols-outlined">person_off</span>
                 No hay clientes registrados
@@ -124,7 +125,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="table-row" *ngFor="let e of especialistas">
+            <tr class="table-row" *ngFor="let e of especialistasFiltrados">
               <td class="td">
                 <div class="user-cell">
                   <div class="user-avatar-letter">{{ e.nombre.charAt(0).toUpperCase() }}</div>
@@ -150,13 +151,10 @@
                   <button class="action-btn" (click)="cambiarEstado(e)" title="Cambiar estado">
                     <span class="material-symbols-outlined">{{ e.estado === 'activo' ? 'block' : 'check_circle' }}</span>
                   </button>
-                  <button class="action-btn action-btn--delete" (click)="openConfirmDeleteEspecialista(e)" title="Eliminar">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
                 </div>
               </td>
             </tr>
-            <tr *ngIf="especialistas.length === 0">
+            <tr *ngIf="especialistasFiltrados.length === 0">
               <td colspan="5" class="empty-row">
                 <span class="material-symbols-outlined">person_off</span>
                 No hay especialistas registrados
@@ -214,34 +212,13 @@
     </div>
 
     <div class="modal__footer">
-      <button class="btn-ghost" (click)="closeUserModal()">Cancelar</button>
-      <button class="btn-primary" (click)="submitForm()">
+      <button type="button" class="btn-ghost" (click)="closeUserModal()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="submitForm()">
         <span class="material-symbols-outlined">save</span>
         {{ isEditing ? 'Guardar Cambios' : 'Crear Usuario' }}
       </button>
     </div>
 
-  </div>
-</div>
-
-<!-- MODAL CONFIRMAR ELIMINAR -->
-<div class="modal-backdrop" [class.open]="showConfirmModal" (click)="closeConfirmModal()" role="alertdialog" aria-modal="true">
-  <div class="confirm-dialog" (click)="$event.stopPropagation()">
-    <div class="confirm-dialog__icon">
-      <span class="material-symbols-outlined">person_remove</span>
-    </div>
-    <h3 class="confirm-dialog__title">Eliminar Usuario</h3>
-    <p class="confirm-dialog__text">
-      ¿Está seguro de que desea eliminar a <strong>"{{ deletingNombre }}"</strong>?
-      Esta acción no se puede deshacer.
-    </p>
-    <div class="confirm-dialog__actions">
-      <button class="btn-ghost" (click)="closeConfirmModal()">Cancelar</button>
-      <button class="btn-danger" (click)="confirmDelete()">
-        <span class="material-symbols-outlined">delete</span>
-        Eliminar
-      </button>
-    </div>
   </div>
 </div>
 
