@@ -1,162 +1,176 @@
-// reservas.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Navbar } from '../../../components/navbar/navbar';
+import { environment } from 'environments/environment';
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
-export interface Servicio {
-  id: number;
+interface ServicioBackend {
+  idServicio: number;
   nombre: string;
-  precio: number;
-  duracion: number;       // minutos
-  categoria: string;
   descripcion: string;
-  imagen: string;
-  tags: string[];         // para búsqueda extendida
+  precio: number;
+  duracionMinutos: number;
+  estado: string;
+  imagenUrl?: string;
 }
 
-export interface Complemento {
+interface Usuario {
   id: number;
   nombre: string;
-  precio: number;
-  agregado: boolean;
+  correo: string;
+  rol: string;
+  estado: string;
 }
 
-export interface Cliente {
-  nombre: string;
-  email: string;
-  telefono: string;
+interface Reserva {
+  idReserva: number;
+  idCliente: number;
+  nombreCliente: string;
+  idServicios: number[];
+  nombresServicios: string[];
+  idTerapeuta: number;
+  nombreTerapeuta: string;
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  estado: string;
+  totalServicios: number;
 }
 
-export interface FechaOpcion {
-  etiqueta: string;
-  dia: string;
-  valor: string;
+interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-reservas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Navbar],
   templateUrl: './Nuevares.html',
   styleUrls: ['./Nuevares.css'],
 })
 export class ReservasComponent implements OnInit {
 
-  // ── Estado de búsqueda
+  private apiUrl = environment.apiUrl;
+
+  // ── Rol
+  esCliente: boolean = false;
+  rol: string = '';
+
+  // ── Servicios
+  servicios: ServicioBackend[] = [];
+  serviciosFiltrados: ServicioBackend[] = [];
+  serviciosSeleccionados: ServicioBackend[] = [];
   searchQuery: string = '';
-  serviciosFiltrados: Servicio[] = [];
 
-  // ── Servicio elegido
-  servicioSeleccionado: Servicio | null = null;
+  // ── Terapeutas
+  terapeutas: Usuario[] = [];
+  terapeutaSeleccionado: Usuario | null = null;
 
-  // ── Datos del cliente
-  cliente: Cliente = {
-    nombre: 'Ana García',
-    email: 'ana.garcia@email.com',
-    telefono: '+34 600 000 000',
-  };
+  // ── Cliente
+  clienteBusqueda: string = '';
+  clientesEncontrados: Usuario[] = [];
+  clienteSeleccionado: Usuario | null = null;
+  buscandoCliente: boolean = false;
+  private busquedaTimeout: any = null;
 
-  // ── Fecha / hora
-  fechaSeleccionada: string = 'hoy';
-  horaSeleccionada: string = '16:00';
+  // ── Disponibilidad (solo cliente)
+  verificandoDisponibilidad: boolean = false;
+  mensajeDisponibilidad: string = '';
 
-  fechas: FechaOpcion[] = [
-    { etiqueta: 'Hoy',    dia: '24 Oct', valor: 'hoy'    },
-    { etiqueta: 'Mañana', dia: '25 Oct', valor: 'manana' },
+  // ── Calendario mini
+  hoy = new Date();
+  mesActual: Date = new Date(this.hoy.getFullYear(), this.hoy.getMonth(), 1);
+  fechaSeleccionada: Date | null = null;
+  diasCalendario: (Date | null)[] = [];
+  nombresMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  nombresDias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+  // ── Hora
+  horaSeleccionada: string = '';
+  horaManual: string = '';
+  usarHoraManual: boolean = false;
+  horas: string[] = [
+    '08:00:00','09:00:00','10:00:00','11:00:00','12:00:00',
+    '13:00:00','14:00:00','15:00:00','16:00:00','17:00:00','18:00:00'
   ];
 
-  horas: string[] = ['16:00', '17:30', '19:00'];
+  // ── UI
+  toasts: Toast[] = [];
+  isSubmitting: boolean = false;
+  readonly placeholder = 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=80';
 
-  // ── Complementos
-  complementos: Complemento[] = [
-    { id: 1, nombre: 'Exfoliación de manos', precio: 20,  agregado: false },
-    { id: 2, nombre: 'Mascarilla capilar',   precio: 35,  agregado: false },
-    { id: 3, nombre: 'Aromaterapia extra',   precio: 25,  agregado: false },
+  // ── Calendario Modal
+  mostrarCalendario: boolean = false;
+  reservas: Reserva[] = [];
+  semanaActual: Date = new Date();
+  diasSemana: Date[] = [];
+  horasCalendario: string[] = [
+    '08:00','09:00','10:00','11:00','12:00',
+    '13:00','14:00','15:00','16:00','17:00','18:00'
   ];
 
-  // ── Catálogo de servicios
-  // Reemplaza las URLs de imagen con las de tu proyecto (assets o CDN)
-  servicios: Servicio[] = [
-    {
-      id: 1,
-      nombre: 'Masaje de Piedras Volcánicas',
-      precio: 120,
-      duracion: 90,
-      categoria: 'Relax Profundo',
-      descripcion: 'Una terapia milenaria que utiliza piedras de basalto calientes para relajar la musculatura y equilibrar los centros energéticos.',
-      imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXaTRuVYvYtweZpr6FKDcjRljf_nzS-KuXPtYjXxUh92Og5qaPP_hycZZE-jXKTUeqdrZuTNc8vd3DjCKMDl4-_AZAN6Xl4j6qmzgU53JAGss-FtITUnQisqZkPNkyI58i-PLwawd0BhTEEkWFtTFYLxw4p2WoCqVlWgu0rLTt0mkfy7Hchji7MwoGYXZpvdKYCePeX54mKZ9i2ngipq6peLbH4ZQSao1kluk4yvYpKV_XR2xXNtK4U_pF3IEHwtiPW7cJmSKINbU',
-      tags: ['masaje', 'piedras', 'basalto', 'volcánico', 'calor', 'relax', 'muscular'],
-    },
-    {
-      id: 2,
-      nombre: 'Aromaterapia Sensorial',
-      precio: 95,
-      duracion: 60,
-      categoria: 'Equilibrio Mental',
-      descripcion: 'Inmersión olfativa con aceites orgánicos personalizados diseñados para restaurar la calma mental y la vitalidad corporal.',
-      imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBo1qZuOcfOEZFofbMZkFXWY2uqsEErCgUVEXguvp7CiS8_0PcfeA6xrKHIjJArKk0HmnyU1XgiyJmLHgtXqelzJCAIhyxwZrEYOp7xlnkDEF6qLGNtcLfH0G5wasQo5zPU5ZInrbj5lO8pi3x0lR5QhfjwFSevAI7R7zyLHBdfsiae6UysLI-q0m0FztArA-4QMSPo-VQshYa4UgnNFTxvxlbCuwcw0voRQWePIeGvtW0t9h1wabrKQwHZArcwEJeInnhQ8Pbsi8E',
-      tags: ['aromaterapia', 'aceites', 'orgánico', 'aroma', 'olfativo', 'calma', 'mental'],
-    },
-    {
-      id: 3,
-      nombre: 'Facial de Oro 24K',
-      precio: 185,
-      duracion: 75,
-      categoria: 'Iluminación Real',
-      descripcion: 'Tratamiento rejuvenecedor de lujo que utiliza partículas de oro puro para estimular el colágeno y proporcionar un brillo inigualable.',
-      imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBDpaR7iDjZVYjTX5-U1M2pYwCAUzvqMZsK2_HvNz6wb4NpIk_TDflicwj8flJExnIC84lHCECE99zMjCwkV3pmHz9pbRQ5zjJICjdxri_cef2SdKswn9NrlbhdQnB1JxveGtM3Nq6MNlmK3l8xTe37Ug95JvodejnkuHcFTa_Te97NzswCvETJchFSkFv874cwPBUhuGmqs6iN2C9_AMYQfx6A83xayUa3NTR-66Q6hk61xmeaRj3ifUVitxFyBvenU9uyq4MlD54',
-      tags: ['facial', 'oro', '24k', 'colágeno', 'brillo', 'lujo', 'piel', 'rejuvenecedor'],
-    },
-    {
-      id: 4,
-      nombre: 'Ritual de Hammam',
-      precio: 140,
-      duracion: 120,
-      categoria: 'Purificación Artística',
-      descripcion: 'Exfoliación profunda con jabón negro y guante kessa, seguida de un baño de vapor y envoltura de arcilla nutritiva.',
-      imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDNtPMB1wh0E8NggNpqDEdMPbytuUPrsxul3mpUMLIrGjS2A0xAReQYg5be_OY3HMKXJ7Dnne71sVNclY2bq-kkv1geKWdIVVS9K03labheJIUB17zT_ZbzUaeS2zbidIx6cYKgH7XhbcmBtjB0xg7TCWpUXmYR_jHuZajqVJ_sqLg4hL6WUt2nMQJemhwmDpvG0dHMNMPLSYJsfyIzZPv7q4xk9pHG0As062a-8wOmQBvdlqkkt7RKgqrrDN8miSI3oJl7z8CCZ5U',
-      tags: ['hammam', 'ritual', 'marruecos', 'exfoliación', 'vapor', 'arcilla', 'jabón', 'kessa', 'purificación'],
-    },
-  ];
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Lifecycle
-  // ─────────────────────────────────────────────────────────────────────────────
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-    this.serviciosFiltrados = [...this.servicios];
-    // Preseleccionar el Facial de Oro 24K (igual que el diseño original)
-    const preselected = this.servicios.find(s => s.id === 3);
-    if (preselected) this.servicioSeleccionado = preselected;
-  }
+    this.rol = localStorage.getItem('rol') || '';
+    this.esCliente = this.rol === 'cliente';
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Búsqueda
-  // ─────────────────────────────────────────────────────────────────────────────
+    this.cargarServicios();
+    this.generarCalendario();
 
-  filtrarServicios(): void {
-    const query = this.searchQuery.trim().toLowerCase();
-
-    if (!query) {
-      this.serviciosFiltrados = [...this.servicios];
-      return;
+    if (!this.esCliente) {
+      this.cargarTerapeutas();
     }
 
-    this.serviciosFiltrados = this.servicios.filter(s => {
-      const camposCombinados = [
-        s.nombre,
-        s.categoria,
-        s.descripcion,
-        ...s.tags,
-      ].join(' ').toLowerCase();
-
-      return camposCombinados.includes(query);
+    // Leer queryParams para preseleccionar fecha y hora
+    this.route.queryParams.subscribe(params => {
+      if (params['fecha']) {
+        const partes = params['fecha'].split('-');
+        this.fechaSeleccionada = new Date(+partes[0], +partes[1]-1, +partes[2]);
+        this.mesActual = new Date(+partes[0], +partes[1]-1, 1);
+        this.generarCalendario();
+      }
+      if (params['hora']) {
+        this.horaSeleccionada = params['hora'];
+      }
     });
+  }
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  // ─── Servicios ────────────────────────────────────────────────
+
+  cargarServicios(): void {
+    this.http.get<ServicioBackend[]>(`${this.apiUrl}/servicios`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.servicios = data.filter(s => s.estado === 'activo');
+        this.serviciosFiltrados = [...this.servicios];
+        this.cdr.detectChanges();
+      },
+      error: () => this.showToast('Error al cargar servicios', 'error')
+    });
+  }
+
+  filtrarServicios(): void {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) { this.serviciosFiltrados = [...this.servicios]; return; }
+    this.serviciosFiltrados = this.servicios.filter(s =>
+      s.nombre.toLowerCase().includes(q) || s.descripcion?.toLowerCase().includes(q)
+    );
   }
 
   limpiarBusqueda(): void {
@@ -164,54 +178,340 @@ export class ReservasComponent implements OnInit {
     this.filtrarServicios();
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Selección de servicio
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  seleccionarServicio(servicio: Servicio): void {
-    this.servicioSeleccionado = servicio;
+  seleccionarServicio(s: ServicioBackend): void {
+    const idx = this.serviciosSeleccionados.findIndex(x => x.idServicio === s.idServicio);
+    if (idx >= 0) {
+      this.serviciosSeleccionados = this.serviciosSeleccionados.filter(x => x.idServicio !== s.idServicio);
+    } else {
+      this.serviciosSeleccionados = [...this.serviciosSeleccionados, s];
+    }
+    this.mensajeDisponibilidad = '';
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Complementos
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  toggleComplemento(c: Complemento): void {
-    c.agregado = !c.agregado;
+  estaSeleccionado(s: ServicioBackend): boolean {
+    return this.serviciosSeleccionados.some(x => x.idServicio === s.idServicio);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Totales
-  // ─────────────────────────────────────────────────────────────────────────────
+  onImgError(event: Event): void {
+    (event.target as HTMLImageElement).src = this.placeholder;
+  }
+
+  // ─── Terapeutas ───────────────────────────────────────────────
+
+  cargarTerapeutas(): void {
+    this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.terapeutas = data.filter(u => u.rol === 'terapeuta' && u.estado === 'activo');
+        this.cdr.detectChanges();
+      },
+      error: () => this.showToast('Error al cargar terapeutas', 'error')
+    });
+  }
+
+  seleccionarTerapeuta(t: Usuario): void {
+    this.terapeutaSeleccionado = t;
+  }
+
+  // ─── Cliente ──────────────────────────────────────────────────
+
+  buscarCliente(): void {
+    clearTimeout(this.busquedaTimeout);
+    if (!this.clienteBusqueda.trim()) { this.clientesEncontrados = []; return; }
+    this.busquedaTimeout = setTimeout(() => {
+      this.buscandoCliente = true;
+      this.http.get<Usuario[]>(
+        `${this.apiUrl}/usuarios/buscar?nombre=${this.clienteBusqueda}`,
+        { headers: this.getHeaders() }
+      ).subscribe({
+        next: (data) => {
+          this.clientesEncontrados = data.filter(u => u.rol === 'cliente');
+          this.buscandoCliente = false;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.buscandoCliente = false; this.showToast('Error al buscar cliente', 'error'); }
+      });
+    }, 400);
+  }
+
+  elegirCliente(u: Usuario): void {
+    this.clienteSeleccionado = u;
+    this.clienteBusqueda = u.nombre;
+    this.clientesEncontrados = [];
+  }
+
+  limpiarCliente(): void {
+    this.clienteSeleccionado = null;
+    this.clienteBusqueda = '';
+    this.clientesEncontrados = [];
+  }
+
+  // ─── Calendario mini ──────────────────────────────────────────
+
+  generarCalendario(): void {
+    const year = this.mesActual.getFullYear();
+    const month = this.mesActual.getMonth();
+    const primerDia = new Date(year, month, 1).getDay();
+    const diasEnMes = new Date(year, month + 1, 0).getDate();
+    this.diasCalendario = [];
+    for (let i = 0; i < primerDia; i++) this.diasCalendario.push(null);
+    for (let d = 1; d <= diasEnMes; d++) this.diasCalendario.push(new Date(year, month, d));
+  }
+
+  mesAnterior(): void {
+    this.mesActual = new Date(this.mesActual.getFullYear(), this.mesActual.getMonth() - 1, 1);
+    this.generarCalendario();
+  }
+
+  mesSiguiente(): void {
+    this.mesActual = new Date(this.mesActual.getFullYear(), this.mesActual.getMonth() + 1, 1);
+    this.generarCalendario();
+  }
+
+  seleccionarFecha(dia: Date | null): void {
+    if (!dia || dia < this.hoy) return;
+    this.fechaSeleccionada = dia;
+    this.mensajeDisponibilidad = '';
+  }
+
+  esFechaSeleccionada(dia: Date | null): boolean {
+    if (!dia || !this.fechaSeleccionada) return false;
+    return dia.toDateString() === this.fechaSeleccionada.toDateString();
+  }
+
+  esPasado(dia: Date | null): boolean {
+    if (!dia) return false;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    return dia < hoy;
+  }
+
+  esHoyMini(dia: Date | null): boolean {
+    if (!dia) return false;
+    return dia.toDateString() === this.hoy.toDateString();
+  }
+
+  getFechaFormateada(): string {
+    if (!this.fechaSeleccionada) return '';
+    const y = this.fechaSeleccionada.getFullYear();
+    const m = String(this.fechaSeleccionada.getMonth() + 1).padStart(2, '0');
+    const d = String(this.fechaSeleccionada.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // ─── Hora ─────────────────────────────────────────────────────
+
+  get horaFinal(): string {
+    if (this.usarHoraManual) {
+      return this.horaManual ? this.horaManual + ':00' : '';
+    }
+    return this.horaSeleccionada;
+  }
+
+  get duracionTotal(): number {
+    return this.serviciosSeleccionados.reduce((sum, s) => sum + s.duracionMinutos, 0);
+  }
+
+  // ─── Reserva ──────────────────────────────────────────────────
 
   calcularSubtotal(): number {
-    const base = this.servicioSeleccionado?.precio ?? 0;
-    const extras = this.complementos
-      .filter(c => c.agregado)
-      .reduce((sum, c) => sum + c.precio, 0);
-    return base + extras;
+    return this.serviciosSeleccionados.reduce((sum, s) => sum + s.precio, 0);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Confirmar reserva
-  // ─────────────────────────────────────────────────────────────────────────────
+  puedeConfirmar(): boolean {
+    if (this.esCliente) {
+      return !!(
+        this.serviciosSeleccionados.length > 0 &&
+        this.fechaSeleccionada &&
+        this.horaFinal
+      );
+    }
+    return !!(
+      this.serviciosSeleccionados.length > 0 &&
+      this.terapeutaSeleccionado &&
+      this.clienteSeleccionado &&
+      this.fechaSeleccionada &&
+      this.horaFinal
+    );
+  }
 
   confirmarReserva(): void {
-    if (!this.servicioSeleccionado) return;
+    if (!this.puedeConfirmar() || this.isSubmitting) return;
+    if (this.esCliente) {
+      this.confirmarReservaCliente();
+    } else {
+      this.confirmarReservaAdmin();
+    }
+  }
 
-    const resumen = {
-      servicio: this.servicioSeleccionado,
-      complementos: this.complementos.filter(c => c.agregado),
-      cliente: this.cliente,
-      fecha: this.fechaSeleccionada,
-      hora: this.horaSeleccionada,
-      total: this.calcularSubtotal(),
+  confirmarReservaCliente(): void {
+    this.isSubmitting = true;
+    this.verificandoDisponibilidad = true;
+    this.mensajeDisponibilidad = '';
+
+    this.http.get<any>(
+      `${this.apiUrl}/reservas/terapeuta-disponible?fecha=${this.getFechaFormateada()}&horaInicio=${this.horaFinal}&duracionMinutos=${this.duracionTotal}`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (terapeuta) => {
+        this.verificandoDisponibilidad = false;
+        const body = {
+          idTerapeuta: terapeuta.idTerapeuta,
+          idServicios: this.serviciosSeleccionados.map(s => s.idServicio),
+          fecha: this.getFechaFormateada(),
+          horaInicio: this.horaFinal
+        };
+        this.http.post(`${this.apiUrl}/reservas`, body, { headers: this.getHeaders() }).subscribe({
+          next: () => {
+            this.showToast('Reserva creada exitosamente', 'success');
+            this.isSubmitting = false;
+            setTimeout(() => this.router.navigate(['/dashboard/cliente']), 1500);
+          },
+          error: (err) => {
+            const msg = err?.error?.message || 'Error al crear la reserva';
+            this.showToast(msg, 'error');
+            this.isSubmitting = false;
+          }
+        });
+      },
+      error: (err) => {
+        this.verificandoDisponibilidad = false;
+        this.isSubmitting = false;
+        if (err.status === 204 || err.status === 404) {
+          this.mensajeDisponibilidad = 'No hay terapeutas disponibles en este horario. Por favor elige otra hora.';
+        } else {
+          this.mensajeDisponibilidad = 'Error al verificar disponibilidad.';
+        }
+      }
+    });
+  }
+
+  confirmarReservaAdmin(): void {
+    this.isSubmitting = true;
+    const body = {
+      idCliente: this.clienteSeleccionado!.id,
+      idServicios: this.serviciosSeleccionados.map(s => s.idServicio),
+      idTerapeuta: this.terapeutaSeleccionado!.id,
+      fecha: this.getFechaFormateada(),
+      horaInicio: this.horaFinal
     };
+    this.http.post(`${this.apiUrl}/reservas`, body, { headers: this.getHeaders() }).subscribe({
+      next: () => {
+        this.showToast('Reserva creada exitosamente', 'success');
+        this.isSubmitting = false;
+        const ruta = this.rol === 'recepcionista'
+          ? '/dashboard/recepcionista/reservas'
+          : '/dashboard/admin/reservas';
+        setTimeout(() => this.router.navigate([ruta]), 1500);
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al crear la reserva';
+        this.showToast(msg, 'error');
+        this.isSubmitting = false;
+      }
+    });
+  }
 
-    console.log('[Spa App] Reserva confirmada:', resumen);
+  resetForm(): void {
+    this.serviciosSeleccionados = [];
+    this.terapeutaSeleccionado = null;
+    this.clienteSeleccionado = null;
+    this.clienteBusqueda = '';
+    this.fechaSeleccionada = null;
+    this.horaSeleccionada = '';
+    this.horaManual = '';
+    this.usarHoraManual = false;
+    this.searchQuery = '';
+    this.mensajeDisponibilidad = '';
+    this.filtrarServicios();
+  }
 
-    // TODO: Conectar con tu servicio/API de backend
-    // this.reservasService.crearReserva(resumen).subscribe(...)
-    // router.navigate(['/reservas/confirmacion', resumen.id])
+  // ─── Calendario Modal ─────────────────────────────────────────
+
+  abrirCalendario(): void {
+    this.mostrarCalendario = true;
+    this.generarSemana();
+    this.cargarReservas();
+  }
+
+  cerrarCalendario(): void {
+    this.mostrarCalendario = false;
+  }
+
+  cargarReservas(): void {
+    const endpoint = this.esCliente
+      ? `${this.apiUrl}/reservas/mis-reservas`
+      : `${this.apiUrl}/reservas`;
+    this.http.get<Reserva[]>(endpoint, { headers: this.getHeaders() }).subscribe({
+      next: (data) => { this.reservas = data; this.cdr.detectChanges(); },
+      error: () => this.showToast('Error al cargar reservas', 'error')
+    });
+  }
+
+  generarSemana(): void {
+    const inicio = new Date(this.semanaActual);
+    const dia = inicio.getDay();
+    const diff = inicio.getDate() - dia + (dia === 0 ? -6 : 1);
+    inicio.setDate(diff);
+    this.diasSemana = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(inicio);
+      d.setDate(inicio.getDate() + i);
+      return d;
+    });
+  }
+
+  semanaAnterior(): void {
+    this.semanaActual = new Date(this.semanaActual);
+    this.semanaActual.setDate(this.semanaActual.getDate() - 7);
+    this.generarSemana();
+  }
+
+  semanaSiguiente(): void {
+    this.semanaActual = new Date(this.semanaActual);
+    this.semanaActual.setDate(this.semanaActual.getDate() + 7);
+    this.generarSemana();
+  }
+
+  getReservasDia(dia: Date): Reserva[] {
+    return this.reservas.filter(r => r.fecha === this.formatFecha(dia));
+  }
+
+  formatFecha(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
+
+  getTopOffset(horaInicio: string): number {
+    const [h, m] = horaInicio.split(':').map(Number);
+    return ((h - 8) * 60 + m) * (50 / 60);
+  }
+
+  getAltura(horaInicio: string, horaFin: string): number {
+    const [h1, m1] = horaInicio.split(':').map(Number);
+    const [h2, m2] = horaFin.split(':').map(Number);
+    return Math.max(((h2 * 60 + m2) - (h1 * 60 + m1)) * (50 / 60), 30);
+  }
+
+  getNombreDia(dia: Date): string {
+    return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][dia.getDay()];
+  }
+
+  esHoy(dia: Date): boolean {
+    return dia.toDateString() === new Date().toDateString();
+  }
+
+  getSemanaLabel(): string {
+    if (this.diasSemana.length === 0) return '';
+    const ini = this.diasSemana[0];
+    const fin = this.diasSemana[6];
+    return `${ini.getDate()} - ${fin.getDate()} ${this.nombresMeses[fin.getMonth()]} ${fin.getFullYear()}`;
+  }
+
+  // ─── Toasts ───────────────────────────────────────────────────
+
+  showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    const toast: Toast = { id: Math.random().toString(36).slice(2), message, type };
+    this.toasts.push(toast);
+    setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== toast.id); }, 3000);
   }
 }

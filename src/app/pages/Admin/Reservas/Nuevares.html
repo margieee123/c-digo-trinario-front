@@ -1,203 +1,222 @@
-<!-- reservas.component.html -->
+<app-navbar paginaActiva="reservas"></app-navbar>
 <main class="reservas-layout">
 
-  <!-- MAIN CONTENT -->
-  <section class="reservas-main">
-
-    <!-- Back + Header -->
-    <div class="reservas-back">
-      <a routerLink="/agenda" class="back-link">
-        <span class="icon">&#8592;</span>
-        <span>Volver a la Agenda</span>
-      </a>
+  <div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [ngClass]="'toast-' + t.type">
+      {{ t.message }}
     </div>
+  </div>
 
+  <section class="reservas-main">
     <header class="reservas-header">
-      <p class="paso-label">Paso 01 de 03</p>
-      <h1 class="reservas-titulo">Seleccione su <em>Experiencia</em></h1>
+      <div class="header-top-row">
+        <h1 class="reservas-titulo">Nueva <em>Reserva</em></h1>
+        <button class="btn-ver-calendario" (click)="abrirCalendario()">
+          📅 Ver Calendario
+        </button>
+      </div>
     </header>
 
-    <!-- BUSCADOR -->
     <div class="buscador-wrapper">
       <div class="buscador-container">
         <span class="buscador-icon">&#9906;</span>
         <input
           type="text"
           class="buscador-input"
-          placeholder="Buscar servicio (ej. Facial, Masaje, Hammam...)"
+          placeholder="Buscar servicio..."
           [(ngModel)]="searchQuery"
           (ngModelChange)="filtrarServicios()"
         />
-        <button
-          *ngIf="searchQuery"
-          class="buscador-clear"
-          (click)="limpiarBusqueda()"
-          aria-label="Limpiar búsqueda"
-        >&#10005;</button>
+        <button *ngIf="searchQuery" class="buscador-clear" (click)="limpiarBusqueda()">&#10005;</button>
       </div>
-      <p class="buscador-resultados" *ngIf="searchQuery">
-        {{ serviciosFiltrados.length }} resultado(s) para "<strong>{{ searchQuery }}</strong>"
-      </p>
     </div>
 
-    <!-- GRID DE SERVICIOS -->
     <div class="servicios-grid" *ngIf="serviciosFiltrados.length > 0; else sinResultados">
       <article
         class="servicio-card"
         *ngFor="let s of serviciosFiltrados"
-        [class.seleccionado]="servicioSeleccionado?.id === s.id"
+        [class.seleccionado]="estaSeleccionado(s)"
         (click)="seleccionarServicio(s)"
-        role="button"
-        [attr.aria-pressed]="servicioSeleccionado?.id === s.id"
         tabindex="0"
-        (keydown.enter)="seleccionarServicio(s)"
-      >
-        <!-- Badge -->
-        <div class="card-badge" *ngIf="servicioSeleccionado?.id === s.id">Seleccionado</div>
-
-        <!-- Imagen -->
+        (keydown.enter)="seleccionarServicio(s)">
+        <div class="card-badge" *ngIf="estaSeleccionado(s)">✓ Seleccionado</div>
         <div class="card-imagen-wrapper">
-          <img [src]="s.imagen" [alt]="s.nombre" class="card-imagen" loading="lazy" />
+          <img [src]="s.imagenUrl || placeholder" [alt]="s.nombre" class="card-imagen" loading="lazy" (error)="onImgError($event)" />
           <div class="card-imagen-overlay"></div>
         </div>
-
-        <!-- Info -->
         <div class="card-body">
           <div class="card-header-row">
             <h3 class="card-titulo">{{ s.nombre }}</h3>
-            <span class="card-precio">{{ s.precio }}€</span>
+            <span class="card-precio">${{ s.precio | number }}</span>
           </div>
           <div class="card-meta">
-            <span class="card-meta-item">
-              <span class="meta-icon">&#9202;</span>
-              {{ s.duracion }} min
-            </span>
-            <span class="meta-sep"></span>
-            <span class="card-meta-item card-tag">{{ s.categoria }}</span>
+            <span class="card-meta-item">&#9202; {{ s.duracionMinutos }} min</span>
           </div>
           <p class="card-descripcion">{{ s.descripcion }}</p>
         </div>
       </article>
     </div>
 
-    <!-- Sin resultados -->
     <ng-template #sinResultados>
       <div class="sin-resultados">
-        <span class="sin-resultados-icon">&#128269;</span>
-        <p>No se encontraron servicios para "<strong>{{ searchQuery }}</strong>"</p>
-        <button class="btn-limpiar" (click)="limpiarBusqueda()">Ver todos los servicios</button>
+        <p>No se encontraron servicios</p>
+        <button class="btn-limpiar" (click)="limpiarBusqueda()">Ver todos</button>
       </div>
     </ng-template>
-
   </section>
 
-  <!-- SIDEBAR: RESUMEN DE RESERVA -->
   <aside class="reservas-sidebar">
     <div class="sidebar-panel">
       <h2 class="sidebar-titulo">Resumen de Reserva</h2>
 
-      <!-- Servicio seleccionado -->
+      <!-- Servicios seleccionados -->
       <div class="sidebar-section">
-        <p class="sidebar-label">Servicio Principal</p>
-        <div class="sidebar-servicio" *ngIf="servicioSeleccionado; else sinServicio">
-          <div>
-            <h4 class="sidebar-servicio-nombre">{{ servicioSeleccionado.nombre }}</h4>
-            <p class="sidebar-especialista">Especialista: Elena V.</p>
+        <p class="sidebar-label">Servicios ({{ serviciosSeleccionados.length }})</p>
+        <div *ngIf="serviciosSeleccionados.length > 0; else sinServicio">
+          <div class="sidebar-servicio" *ngFor="let s of serviciosSeleccionados">
+            <div>
+              <h4 class="sidebar-servicio-nombre">{{ s.nombre }}</h4>
+              <p class="sidebar-meta">{{ s.duracionMinutos }} min</p>
+            </div>
+            <span class="sidebar-servicio-precio">${{ s.precio | number }}</span>
           </div>
-          <span class="sidebar-servicio-precio">{{ servicioSeleccionado.precio }}€</span>
         </div>
         <ng-template #sinServicio>
-          <p class="sidebar-placeholder">Selecciona un servicio del catálogo</p>
+          <p class="sidebar-placeholder">Selecciona uno o más servicios</p>
         </ng-template>
       </div>
 
-      <!-- Complementos -->
-      <div class="sidebar-section sidebar-complementos">
-        <p class="sidebar-label">Complementos sugeridos</p>
-        <div class="complemento-item" *ngFor="let c of complementos">
-          <span>{{ c.nombre }}</span>
-          <button class="btn-add" (click)="toggleComplemento(c)" [class.added]="c.agregado">
-            {{ c.agregado ? '✓' : '+' }}
-          </button>
+      <!-- Cliente — solo admin/recepcionista -->
+      <div class="sidebar-section" *ngIf="!esCliente">
+        <p class="sidebar-label">Cliente</p>
+        <div class="cliente-search-wrapper">
+          <input
+            class="form-input"
+            type="text"
+            placeholder="Buscar por nombre o email..."
+            [(ngModel)]="clienteBusqueda"
+            (ngModelChange)="buscarCliente()"
+          />
+          <button *ngIf="clienteSeleccionado" class="btn-clear-small" (click)="limpiarCliente()">&#10005;</button>
         </div>
-      </div>
-
-      <!-- Editar Cliente -->
-      <div class="sidebar-section">
-        <div class="sidebar-label-row">
-          <p class="sidebar-label">Editar Cliente</p>
-          <span class="edit-icon">&#9998;</span>
-        </div>
-        <div class="form-grupo">
-          <input class="form-input" type="text" placeholder="Nombre Completo" [(ngModel)]="cliente.nombre" />
-          <input class="form-input" type="email" placeholder="Email" [(ngModel)]="cliente.email" />
-          <input class="form-input" type="tel" placeholder="Teléfono" [(ngModel)]="cliente.telefono" />
-        </div>
-      </div>
-
-      <!-- Especialista -->
-      <div class="sidebar-section">
-        <p class="sidebar-label">Editar Especialista</p>
-        <div class="especialista-selector">
-          <div class="especialista-avatar">
-            <span>E</span>
+        <div class="cliente-resultados" *ngIf="clientesEncontrados.length > 0">
+          <div class="cliente-item" *ngFor="let u of clientesEncontrados" (click)="elegirCliente(u)">
+            <span class="cliente-nombre">{{ u.nombre }}</span>
+            <span class="cliente-correo">{{ u.correo }}</span>
           </div>
-          <div class="especialista-info">
-            <p class="especialista-nombre">Elena V.</p>
-            <p class="especialista-rol">Especialista Senior</p>
-          </div>
-          <span class="chevron">&#8964;</span>
+        </div>
+        <p class="buscando-text" *ngIf="buscandoCliente">Buscando...</p>
+        <div class="cliente-seleccionado" *ngIf="clienteSeleccionado">
+          <span>✓ {{ clienteSeleccionado.nombre }}</span>
+          <span class="cliente-correo">{{ clienteSeleccionado.correo }}</span>
         </div>
       </div>
 
-      <!-- Fecha y Hora -->
-      <div class="sidebar-section">
-        <p class="sidebar-label">Seleccionar Fecha y Hora</p>
-        <div class="fechas-grid">
+      <!-- Terapeuta — solo admin/recepcionista -->
+      <div class="sidebar-section" *ngIf="!esCliente">
+        <p class="sidebar-label">Terapeuta</p>
+        <div class="terapeutas-lista">
           <div
-            class="fecha-card"
-            *ngFor="let f of fechas"
-            [class.activa]="fechaSeleccionada === f.valor"
-            (click)="fechaSeleccionada = f.valor"
-          >
-            <span class="fecha-etiqueta">{{ f.etiqueta }}</span>
-            <span class="fecha-dia">{{ f.dia }}</span>
+            class="terapeuta-item"
+            *ngFor="let t of terapeutas"
+            [class.activo]="terapeutaSeleccionado?.id === t.id"
+            (click)="seleccionarTerapeuta(t)">
+            <div class="terapeuta-avatar">{{ t.nombre.charAt(0) }}</div>
+            <span>{{ t.nombre }}</span>
           </div>
         </div>
-        <div class="horas-lista">
+        <p class="sidebar-placeholder" *ngIf="terapeutas.length === 0">Sin terapeutas disponibles</p>
+      </div>
+
+      <!-- Mensaje terapeuta automático para cliente -->
+      <div class="sidebar-section" *ngIf="esCliente">
+        <p class="sidebar-label">Terapeuta</p>
+        <p class="sidebar-placeholder">
+          <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">auto_awesome</span>
+          Se asignará automáticamente el mejor disponible
+        </p>
+      </div>
+
+      <!-- Calendario mini -->
+      <div class="sidebar-section">
+        <p class="sidebar-label">Fecha</p>
+        <div class="calendario">
+          <div class="calendario-header">
+            <button class="cal-nav" (click)="mesAnterior()">&#8249;</button>
+            <span class="cal-mes">{{ nombresMeses[mesActual.getMonth()] }} {{ mesActual.getFullYear() }}</span>
+            <button class="cal-nav" (click)="mesSiguiente()">&#8250;</button>
+          </div>
+          <div class="calendario-dias-nombre">
+            <span *ngFor="let d of nombresDias">{{ d }}</span>
+          </div>
+          <div class="calendario-grid">
+            <div
+              *ngFor="let dia of diasCalendario"
+              class="cal-dia"
+              [class.vacio]="!dia"
+              [class.pasado]="esPasado(dia)"
+              [class.hoy]="esHoyMini(dia)"
+              [class.seleccionado]="esFechaSeleccionada(dia)"
+              (click)="seleccionarFecha(dia)">
+              {{ dia ? dia.getDate() : '' }}
+            </div>
+          </div>
+        </div>
+        <p class="fecha-seleccionada-text" *ngIf="fechaSeleccionada">
+          📅 {{ fechaSeleccionada | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+
+      <!-- Hora -->
+      <div class="sidebar-section">
+        <p class="sidebar-label">Hora</p>
+        <div class="horas-grid" *ngIf="!usarHoraManual">
           <button
             class="hora-btn"
             *ngFor="let h of horas"
             [class.activa]="horaSeleccionada === h"
-            (click)="horaSeleccionada = h"
-          >{{ h }}</button>
+            (click)="horaSeleccionada = h; mensajeDisponibilidad = ''">
+            {{ h.slice(0,5) }}
+          </button>
         </div>
+        <div class="hora-manual-wrapper">
+          <label class="hora-manual-toggle">
+            <input type="checkbox" [(ngModel)]="usarHoraManual" (change)="horaSeleccionada = ''" />
+            <span>Otra hora</span>
+          </label>
+          <input
+            *ngIf="usarHoraManual"
+            class="form-input"
+            type="time"
+            [(ngModel)]="horaManual"
+          />
+        </div>
+      </div>
+
+      <!-- Mensaje disponibilidad (solo cliente) -->
+      <div class="disponibilidad-msg" *ngIf="mensajeDisponibilidad">
+        <span class="material-symbols-outlined">warning</span>
+        {{ mensajeDisponibilidad }}
       </div>
 
       <!-- Totales -->
       <div class="sidebar-totales">
-        <div class="total-fila">
-          <span>Subtotal</span>
-          <span>{{ calcularSubtotal() }}€</span>
-        </div>
-        <div class="total-fila">
-          <span>Impuestos (IVA)</span>
-          <span>0,00€</span>
+        <div class="total-fila" *ngFor="let s of serviciosSeleccionados">
+          <span>{{ s.nombre }}</span>
+          <span>${{ s.precio | number }}</span>
         </div>
         <div class="total-divider"></div>
         <div class="total-fila total-final">
           <span>Total</span>
-          <span class="total-monto">{{ calcularSubtotal() }},00€</span>
+          <span class="total-monto">${{ calcularSubtotal() | number }}</span>
         </div>
       </div>
 
-      <!-- CTA -->
       <button
         class="btn-confirmar"
-        [disabled]="!servicioSeleccionado"
-        (click)="confirmarReserva()"
-      >
-        Confirmar Reserva
+        [disabled]="!puedeConfirmar() || isSubmitting || verificandoDisponibilidad"
+        (click)="confirmarReserva()">
+        {{ isSubmitting || verificandoDisponibilidad ? 'Procesando...' : 'Confirmar Reserva' }}
       </button>
 
       <p class="sidebar-politica">Política de cancelación de 24 horas aplicable.</p>
@@ -205,3 +224,52 @@
   </aside>
 
 </main>
+
+<!-- MODAL CALENDARIO SEMANAL -->
+<div class="cal-modal-backdrop" [class.open]="mostrarCalendario" (click)="cerrarCalendario()">
+  <div class="cal-modal" (click)="$event.stopPropagation()">
+    <div class="cal-modal-header">
+      <div class="cal-modal-nav">
+        <button class="cal-modal-nav-btn" (click)="semanaAnterior()">&#8249;</button>
+        <span class="cal-modal-titulo">{{ getSemanaLabel() }}</span>
+        <button class="cal-modal-nav-btn" (click)="semanaSiguiente()">&#8250;</button>
+      </div>
+      <button class="cal-modal-close" (click)="cerrarCalendario()">&#10005;</button>
+    </div>
+    <div class="cal-modal-body">
+      <div class="cal-horas-col">
+        <div class="cal-dia-header"></div>
+        <div class="cal-horas-lista">
+          <div class="cal-hora-label" *ngFor="let h of horasCalendario">{{ h }}</div>
+        </div>
+      </div>
+      <div class="cal-dia-col" *ngFor="let dia of diasSemana">
+        <div class="cal-dia-header" [class.hoy]="esHoy(dia)">
+          <span class="cal-dia-nombre">{{ getNombreDia(dia) }}</span>
+          <span class="cal-dia-numero" [class.hoy]="esHoy(dia)">{{ dia.getDate() }}</span>
+        </div>
+        <div class="cal-dia-slots">
+          <div class="cal-hora-line" *ngFor="let h of horasCalendario"></div>
+          <div
+            *ngFor="let r of getReservasDia(dia)"
+            class="cal-evento"
+            [class.cal-evento--pendiente]="r.estado === 'pendiente'"
+            [class.cal-evento--cancelada]="r.estado === 'cancelada'"
+            [class.cal-evento--finalizada]="r.estado === 'finalizada'"
+            [style.top.px]="getTopOffset(r.horaInicio)"
+            [style.height.px]="getAltura(r.horaInicio, r.horaFin)">
+            <span class="cal-evento-hora">{{ r.horaInicio.slice(0,5) }} - {{ r.horaFin.slice(0,5) }}</span>
+            <span class="cal-evento-cliente">{{ r.nombreCliente }}</span>
+            <span class="cal-evento-servicio">{{ r.nombresServicios.join(', ') }}</span>
+            <span class="cal-evento-terapeuta">{{ r.nombreTerapeuta }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cal-leyenda">
+      <span class="cal-leyenda-item cal-leyenda--pendiente">Pendiente</span>
+      <span class="cal-leyenda-item cal-leyenda--cancelada">Cancelada</span>
+      <span class="cal-leyenda-item cal-leyenda--finalizada">Finalizada</span>
+    </div>
+  </div>
+</div>

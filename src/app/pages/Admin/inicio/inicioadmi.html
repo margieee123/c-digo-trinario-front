@@ -1,44 +1,16 @@
-<!-- inicioadmi.component.html -->
 <div class="admin-shell">
 
-  <!-- ===== HEADER — estilo SpaApp ===== -->
-  <header class="admin-header">
+  <app-navbar paginaActiva="inicio"></app-navbar>
 
-    <!-- Izquierda: marca -->
-    <div class="header-left">
-      <span class="brand-name">SpaApp</span>
-    </div>
-
-    <!-- Centro: navegación -->
-    <nav class="main-nav">
-  <a class="nav-link active" [routerLink]="['/dashboard/admin']">Inicio</a>
-  <a class="nav-link" [routerLink]="['/dashboard/admin/agenda']">Agenda</a>
-  <a class="nav-link" [routerLink]="['/dashboard/admin/servicios']">Servicios</a>
-  <a class="nav-link" [routerLink]="['/dashboard/admin/usuarios']">Usuarios</a>
-  <a class="nav-link">Facturación</a>
-  <a class="nav-link">Configuración</a>
-</nav>
-
-    <!-- Derecha: notif + avatar + cerrar sesión -->
-    <div class="header-right">
-      <button class="notif-btn" aria-label="Notificaciones">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="notif-dot"></span>
-      </button>
-      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
-      <span class="material-symbols-outlined user-icon-btn">account_circle</span>
-      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
-    </div>
-
-  </header>
-
-  <!-- MAIN CANVAS -->
   <main class="admin-main">
     <div class="page-wrapper">
 
       <!-- PAGE TITLE -->
       <div class="page-title-row">
-        <h1 class="page-title">Panel de Administración</h1>
+        <div>
+          <h1 class="page-title">Panel de Administración</h1>
+          <p class="page-subtitle">Bienvenido, {{ nombre }}</p>
+        </div>
         <button class="btn-primary" (click)="irNuevaReserva()">
           <span class="material-symbols-outlined">add</span>
           Nueva Reserva
@@ -63,42 +35,70 @@
         <!-- LEFT COLUMN -->
         <div class="col-main">
 
-          <!-- CHART CARD -->
+          <!-- GRÁFICO BARRAS -->
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Perspectiva Operativa</h2>
-                <span class="card-subtitle">Crecimiento últimos 30 días</span>
+                <h2 class="card-title">Reservas por Día</h2>
+                <span class="card-subtitle">Semana actual</span>
               </div>
               <div class="chart-legend">
                 <span class="legend-dot legend-dot--active"></span>
-                <span class="legend-dot"></span>
+                <span class="legend-label">Confirmadas</span>
               </div>
             </div>
             <div class="bar-chart">
-              <div
-                class="bar"
-                *ngFor="let bar of barData"
-                [style.height.%]="bar.height"
-                [class.bar--peak]="bar.highlight"
-              ></div>
+              <div class="bar-col" *ngFor="let bar of barData">
+                <div class="bar-count" *ngIf="bar.count > 0">{{ bar.count }}</div>
+                <div
+                  class="bar"
+                  [style.height.%]="bar.height"
+                  [class.bar--peak]="bar.highlight">
+                </div>
+                <div class="bar-label">{{ bar.label }}</div>
+              </div>
             </div>
           </div>
 
-          <!-- PROFESSIONALS TABLE -->
+          <!-- DISTRIBUCIÓN ESTADOS -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Reservas por Estado</h2>
+                <span class="card-subtitle">Mes actual — {{ totalReservasMes }} total</span>
+              </div>
+            </div>
+            <div class="estados-grid">
+              <div class="estado-item" *ngFor="let e of estadosReservas">
+                <div class="estado-bar-wrap">
+                  <div
+                    class="estado-bar"
+                    [style.width.%]="totalReservasMes > 0 ? (e.count / totalReservasMes) * 100 : 0"
+                    [style.background]="e.color">
+                  </div>
+                </div>
+                <div class="estado-info">
+                  <span class="estado-dot" [style.background]="e.color"></span>
+                  <span class="estado-label">{{ e.label }}</span>
+                  <span class="estado-count">{{ e.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLA PROFESIONALES -->
           <div class="card">
             <div class="table-header">
-              <h2 class="card-title">Lista de Profesionales</h2>
-              <button class="btn-link">Exportar Reporte</button>
+              <h2 class="card-title">Terapeutas</h2>
+              <span class="card-subtitle">{{ profesionales.length }} activos</span>
             </div>
             <div class="table-wrapper">
               <table class="pro-table">
                 <thead>
                   <tr>
                     <th>Profesional</th>
-                    <th>Especialidad</th>
                     <th>Estado</th>
-                    <th class="th-right">Acciones</th>
+                    <th class="th-right">Citas Hoy</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,34 +114,38 @@
                         </div>
                       </div>
                     </td>
-                    <td class="td-specialty">{{ pro.especialidad }}</td>
                     <td>
                       <div class="status-cell">
                         <span class="status-dot"
-                          [class.status-dot--active]="pro.estado === 'activo'"
-                          [class.status-dot--away]="pro.estado === 'permiso'">
+                          [class.status-dot--active]="pro.estado === 'activo'">
                         </span>
                         <span class="status-label">{{ pro.estadoLabel }}</span>
                       </div>
                     </td>
                     <td class="td-right">
-                      <button class="icon-btn" aria-label="Editar">
-                        <span class="material-symbols-outlined">edit</span>
-                      </button>
+                      <span class="citas-badge" [class.citas-badge--active]="pro.citasHoy > 0">
+                        {{ pro.citasHoy }}
+                      </span>
                     </td>
+                  </tr>
+                  <tr *ngIf="profesionales.length === 0">
+                    <td colspan="3" class="empty-row">Sin terapeutas registrados</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+
         </div>
 
-        <!-- RIGHT COLUMN: SERVICE CATALOG -->
+        <!-- RIGHT COLUMN -->
         <div class="col-side">
+
+          <!-- CATÁLOGO SERVICIOS -->
           <div class="card catalog-card">
             <div class="catalog-header">
               <h2 class="card-title">Catálogo de Servicios</h2>
-              <span class="card-subtitle">Ofertas Actuales</span>
+              <span class="card-subtitle">{{ servicios.length }} activos</span>
             </div>
             <ul class="service-list">
               <li class="service-item" *ngFor="let svc of servicios">
@@ -150,18 +154,52 @@
                   <span class="service-desc">{{ svc.descripcion }}</span>
                 </div>
                 <div class="service-meta">
-                  <span class="service-price">{{ svc.precio }}</span>
-                  <span class="service-duration">{{ svc.tiempo }}</span>
+                  <span class="service-price">${{ svc.precio | number }}</span>
+                  <span class="service-duration">{{ svc.duracionMinutos }} MIN</span>
                 </div>
+              </li>
+              <li *ngIf="servicios.length === 0" class="service-empty">
+                Sin servicios activos
               </li>
             </ul>
             <div class="catalog-footer">
-              <button class="btn-add-service">
+              <button class="btn-add-service" [routerLink]="['/dashboard/admin/servicios']">
                 <span class="material-symbols-outlined">add_circle</span>
-                Añadir Nuevo Servicio
+                Gestionar Servicios
               </button>
             </div>
           </div>
+
+          <!-- LOGS RECIENTES -->
+          <div class="card logs-card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Actividad Reciente</h2>
+                <span class="card-subtitle">Últimos eventos del sistema</span>
+              </div>
+            </div>
+            <div class="logs-list">
+              <div class="log-item" *ngFor="let log of logsRecientes">
+                <div class="log-icon" [style.color]="getTipoLogColor(log.tipo)">
+                  <span class="material-symbols-outlined">{{ getTipoLogIcon(log.tipo) }}</span>
+                </div>
+                <div class="log-info">
+                  <p class="log-desc">{{ log.descripcion }}</p>
+                  <div class="log-meta">
+                    <span class="log-usuario" *ngIf="log.nombreUsuario">{{ log.nombreUsuario }}</span>
+                    <span class="log-fecha">{{ formatFechaHora(log.fechaHora) }}</span>
+                  </div>
+                </div>
+                <span class="log-tipo" [style.color]="getTipoLogColor(log.tipo)">
+                  {{ log.tipo.replace('_', ' ') }}
+                </span>
+              </div>
+              <div class="log-empty" *ngIf="logsRecientes.length === 0">
+                Sin actividad reciente
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -174,11 +212,10 @@
           alt="Interior de spa de lujo"
         />
         <div class="promo-content">
-          <span class="promo-tag">Expansión de Verano</span>
-          <h2 class="promo-title">Prepara el Santuario para la Gala de Verano.</h2>
+          <span class="promo-tag">Resumen del Mes</span>
+          <h2 class="promo-title">{{ totalReservasMes }} reservas · ${{ ingresosMes | number }} en ingresos</h2>
           <p class="promo-body">
-            Nuevas categorías de servicio y asignaciones de personal están
-            disponibles para la próxima temporada alta.
+            Panel actualizado en tiempo real con datos del sistema.
           </p>
         </div>
       </section>

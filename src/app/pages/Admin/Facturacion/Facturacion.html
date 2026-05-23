@@ -1,0 +1,301 @@
+<app-navbar paginaActiva="facturacion"></app-navbar>
+
+<div class="fac-shell">
+
+  <div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast"
+      [class.toast--success]="t.type === 'success'"
+      [class.toast--error]="t.type === 'error'">
+      {{ t.message }}
+    </div>
+  </div>
+
+  <main class="fac-main">
+
+    <div class="page-header">
+      <div>
+        <span class="page-eyebrow">Gestión Financiera</span>
+        <h1 class="page-title">Facturación</h1>
+        <p class="page-subtitle">Administra y registra los pagos del spa</p>
+      </div>
+      <button class="btn-primary" (click)="abrirGenerarModal()">
+        <span class="material-symbols-outlined">add</span>
+        Generar Factura
+      </button>
+    </div>
+
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <p class="kpi-label">Total Facturado</p>
+        <p class="kpi-value">${{ totalFacturado | number }}</p>
+        <p class="kpi-sub">{{ cantidadFacturas }} facturas emitidas</p>
+      </div>
+      <div class="kpi-card kpi-card--pagado">
+        <p class="kpi-label">Total Pagado</p>
+        <p class="kpi-value">${{ totalPagado | number }}</p>
+        <p class="kpi-sub">Ingresos confirmados</p>
+      </div>
+      <div class="kpi-card kpi-card--pendiente">
+        <p class="kpi-label">Por Cobrar</p>
+        <p class="kpi-value">${{ totalPendiente | number }}</p>
+        <p class="kpi-sub">Pagos pendientes</p>
+      </div>
+      <div class="kpi-card">
+        <p class="kpi-label">Tasa de Cobro</p>
+        <p class="kpi-value">
+          {{ totalFacturado > 0 ? ((totalPagado / totalFacturado) * 100).toFixed(0) : 0 }}%
+        </p>
+        <p class="kpi-sub">Eficiencia de cobro</p>
+      </div>
+    </section>
+
+    <div class="filtros-bar">
+      <div class="search-box">
+        <span class="material-symbols-outlined">search</span>
+        <input
+          type="text"
+          placeholder="Buscar por cliente, terapeuta o servicio..."
+          [(ngModel)]="busqueda"
+          (ngModelChange)="aplicarFiltros()" />
+      </div>
+      <select class="filtro-select" [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()">
+        <option value="">Todos los estados</option>
+        <option *ngFor="let e of estadosDisponibles" [value]="e">{{ e }}</option>
+      </select>
+    </div>
+
+    <div class="tabla-card">
+      <table class="fac-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Servicios</th>
+            <th>Terapeuta</th>
+            <th>Fecha Reserva</th>
+            <th>Fecha Emisión</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th class="th-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fac-row" *ngFor="let f of facturasFiltradas" (click)="abrirDetalle(f)">
+            <td class="td-id">#{{ f.idFactura }}</td>
+            <td class="td-cliente">{{ f.nombreCliente || '—' }}</td>
+            <td class="td-servicios">{{ f.nombresServicios?.join(', ') || '—' }}</td>
+            <td class="td-terapeuta">{{ f.nombreTerapeuta || '—' }}</td>
+            <td class="td-fecha">{{ f.fechaReserva || '—' }}</td>
+            <td class="td-fecha">{{ f.fechaEmision }}</td>
+            <td class="td-monto">${{ f.monto | number }}</td>
+            <td>
+              <span class="estado-badge" [class]="getEstadoClass(f.estadoPago)">
+                <span class="material-symbols-outlined">{{ getEstadoIcon(f.estadoPago) }}</span>
+                {{ f.estadoPago }}
+              </span>
+            </td>
+            <td class="td-right" (click)="$event.stopPropagation()">
+              <div class="acciones-wrapper">
+                <button class="btn-pagar" *ngIf="f.estadoPago === 'pendiente'"
+                  (click)="registrarPago(f, $event)">
+                  <span class="material-symbols-outlined">payments</span>
+                  Cobrar
+                </button>
+                <button class="btn-editar-servicios" *ngIf="f.estadoPago === 'pendiente'"
+                  (click)="abrirEditServiciosDesdeFactura(f, $event)"
+                  title="Editar servicios">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="btn-anular" *ngIf="f.estadoPago === 'pendiente'"
+                  (click)="anularFactura(f, $event)"
+                  title="Anular factura">
+                  <span class="material-symbols-outlined">cancel</span>
+                </button>
+                <span class="pagado-label" *ngIf="f.estadoPago === 'pagado'">
+                  <span class="material-symbols-outlined">check</span>
+                  Pagado
+                </span>
+                <span class="anulada-label" *ngIf="f.estadoPago === 'anulada'">
+                  <span class="material-symbols-outlined">cancel</span>
+                  Anulada
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="facturasFiltradas.length === 0">
+            <td colspan="9" class="empty-row">
+              <span class="material-symbols-outlined">receipt_long</span>
+              <p>No hay facturas registradas</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL GENERAR FACTURA -->
+<div class="modal-backdrop" [class.open]="showGenerarModal" (click)="cerrarGenerarModal()">
+  <div class="modal modal--wide" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Nueva Factura</span>
+        <h2 class="modal__title">Seleccionar Reserva</h2>
+      </div>
+      <button class="modal__close" (click)="cerrarGenerarModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body">
+      <p class="modal__desc">Reservas finalizadas pendientes de facturación:</p>
+      <div class="reservas-lista" *ngIf="reservasSinFactura.length > 0; else sinReservas">
+        <div class="reserva-item"
+          *ngFor="let r of reservasSinFactura"
+          [class.reserva-item--seleccionada]="reservaSeleccionada?.idReserva === r.idReserva"
+          (click)="seleccionarReserva(r)">
+          <div class="reserva-item__left">
+            <span class="reserva-item__id">#{{ r.idReserva }}</span>
+            <div>
+              <p class="reserva-item__cliente">{{ r.nombreCliente }}</p>
+              <p class="reserva-item__servicios">{{ r.nombresServicios?.join(', ') }}</p>
+              <p class="reserva-item__meta">
+                {{ r.fecha }} · {{ r.horaInicio?.slice(0,5) }} - {{ r.horaFin?.slice(0,5) }}
+              </p>
+            </div>
+          </div>
+          <div class="reserva-item__right">
+            <span class="reserva-item__terapeuta">{{ r.nombreTerapeuta }}</span>
+            <span class="reserva-item__total">${{ r.totalServicios | number }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #sinReservas>
+        <div class="sin-reservas">
+          <span class="material-symbols-outlined">check_circle</span>
+          <p>Todas las reservas finalizadas ya tienen factura</p>
+        </div>
+      </ng-template>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="cerrarGenerarModal()">Cancelar</button>
+      <button class="btn-primary"
+        [disabled]="!reservaSeleccionada || isSubmitting"
+        (click)="generarFactura()">
+        <span class="material-symbols-outlined">receipt</span>
+        {{ isSubmitting ? 'Generando...' : 'Generar Factura' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-backdrop" [class.open]="showDetalleModal" (click)="cerrarDetalle()">
+  <div class="modal modal--wide" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Factura #{{ facturaDetalle?.idFactura }}</span>
+        <h2 class="modal__title">Detalle de Factura</h2>
+      </div>
+      <button class="modal__close" (click)="cerrarDetalle()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body" *ngIf="facturaDetalle">
+      <div class="detalle-grid">
+        <div class="detalle-section">
+          <p class="detalle-label">Cliente</p>
+          <p class="detalle-value">{{ facturaDetalle.nombreCliente || '—' }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Terapeuta</p>
+          <p class="detalle-value">{{ facturaDetalle.nombreTerapeuta || '—' }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Fecha Reserva</p>
+          <p class="detalle-value">{{ facturaDetalle.fechaReserva || '—' }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Hora</p>
+          <p class="detalle-value">
+            {{ facturaDetalle.horaInicio?.slice(0,5) }} - {{ facturaDetalle.horaFin?.slice(0,5) }}
+          </p>
+        </div>
+        <div class="detalle-section detalle-section--full">
+          <p class="detalle-label">Servicios</p>
+          <p class="detalle-value">{{ facturaDetalle.nombresServicios?.join(', ') || '—' }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Fecha Emisión</p>
+          <p class="detalle-value">{{ facturaDetalle.fechaEmision }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Estado Reserva</p>
+          <p class="detalle-value">{{ facturaDetalle.estadoReserva || '—' }}</p>
+        </div>
+      </div>
+      <div class="detalle-total">
+        <span class="detalle-total-label">Total</span>
+        <span class="detalle-total-monto">${{ facturaDetalle.monto | number }}</span>
+      </div>
+      <div class="detalle-estado">
+        <span class="estado-badge" [class]="getEstadoClass(facturaDetalle.estadoPago)">
+          <span class="material-symbols-outlined">{{ getEstadoIcon(facturaDetalle.estadoPago) }}</span>
+          {{ facturaDetalle.estadoPago }}
+        </span>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="cerrarDetalle()">Cerrar</button>
+      <button class="btn-primary"
+        *ngIf="facturaDetalle?.estadoPago === 'pendiente'"
+        (click)="registrarPago(facturaDetalle!); cerrarDetalle()">
+        <span class="material-symbols-outlined">payments</span>
+        Registrar Pago
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR SERVICIOS -->
+<div class="modal-backdrop" [class.open]="showEditServiciosModal" (click)="cerrarEditServicios()">
+  <div class="modal modal--wide" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Reserva #{{ reservaEditando?.idReserva }}</span>
+        <h2 class="modal__title">Editar Servicios</h2>
+      </div>
+      <button class="modal__close" (click)="cerrarEditServicios()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body" *ngIf="reservaEditando">
+      <p class="modal__desc">Selecciona los servicios para esta reserva:</p>
+      <div class="servicios-grid-edit">
+        <div class="servicio-edit-item"
+          *ngFor="let s of todosServicios"
+          [class.servicio-edit-item--activo]="estaSeleccionado(s.idServicio)"
+          (click)="toggleServicio(s.idServicio)">
+          <div class="servicio-edit-check">
+            <span class="material-symbols-outlined">
+              {{ estaSeleccionado(s.idServicio) ? 'check_box' : 'check_box_outline_blank' }}
+            </span>
+          </div>
+          <div class="servicio-edit-info">
+            <p class="servicio-edit-nombre">{{ s.nombre }}</p>
+            <p class="servicio-edit-meta">{{ s.duracionMinutos }} min · ${{ s.precio | number }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="cerrarEditServicios()">Cancelar</button>
+      <button class="btn-primary"
+        [disabled]="serviciosSeleccionados.length === 0 || isSubmittingServicios"
+        (click)="guardarServicios()">
+        <span class="material-symbols-outlined">save</span>
+        {{ isSubmittingServicios ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+</div>

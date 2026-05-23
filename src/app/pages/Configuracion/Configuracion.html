@@ -1,0 +1,222 @@
+<app-navbar paginaActiva="configuracion"></app-navbar>
+
+<div class="cfg-shell">
+
+  <div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast"
+      [class.toast--success]="t.type === 'success'"
+      [class.toast--error]="t.type === 'error'">
+      {{ t.message }}
+    </div>
+  </div>
+
+  <main class="cfg-main">
+
+    <div class="page-header">
+      <span class="page-eyebrow">Panel de Control</span>
+      <h1 class="page-title">Configuración</h1>
+      <p class="page-subtitle">Personaliza tu experiencia en Spa Manager</p>
+    </div>
+
+    <div class="cfg-grid">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="cfg-col">
+
+        <!-- PERFIL -->
+        <div class="cfg-card">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">account_circle</span>
+            <div>
+              <h2 class="cfg-card__title">Mi Perfil</h2>
+              <p class="cfg-card__subtitle">Información de tu cuenta</p>
+            </div>
+          </div>
+          <div class="cfg-card__body">
+            <div class="perfil-avatar">
+              {{ nombre.charAt(0).toUpperCase() }}
+            </div>
+            <div class="perfil-info">
+              <div class="perfil-field">
+                <span class="perfil-label">Nombre</span>
+                <span class="perfil-value">{{ nombre || '—' }}</span>
+              </div>
+              <div class="perfil-field">
+                <span class="perfil-label">Correo</span>
+                <span class="perfil-value">{{ correo || '—' }}</span>
+              </div>
+              <div class="perfil-field">
+                <span class="perfil-label">Rol</span>
+                <span class="perfil-badge">{{ rol }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEMAS -->
+        <div class="cfg-card">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">palette</span>
+            <div>
+              <h2 class="cfg-card__title">Apariencia</h2>
+              <p class="cfg-card__subtitle">Selecciona el tema de tu preferencia</p>
+            </div>
+          </div>
+          <div class="cfg-card__body">
+            <div class="temas-grid">
+              <div
+                class="tema-card"
+                *ngFor="let t of temas"
+                [class.tema-card--activo]="temaActual === t.id"
+                (click)="seleccionarTema(t.id)">
+                <div class="tema-preview"
+                  [style.background]="t.bg">
+                  <div class="tema-preview__surface" [style.background]="t.surface">
+                    <div class="tema-preview__accent" [style.background]="t.gold"></div>
+                  </div>
+                </div>
+                <div class="tema-info">
+                  <p class="tema-nombre">{{ t.nombre }}</p>
+                  <p class="tema-desc">{{ t.descripcion }}</p>
+                </div>
+                <span class="tema-check material-symbols-outlined" *ngIf="temaActual === t.id">
+                  check_circle
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA -->
+      <div class="cfg-col">
+
+        <!-- CAMBIAR CONTRASEÑA -->
+        <div class="cfg-card">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">lock</span>
+            <div>
+              <h2 class="cfg-card__title">Cambiar Contraseña</h2>
+              <p class="cfg-card__subtitle">Actualiza tu contraseña de acceso</p>
+            </div>
+          </div>
+          <div class="cfg-card__body">
+            <div class="form-field">
+              <label class="form-label">Contraseña Actual</label>
+              <div class="input-wrapper">
+                <input
+                  class="form-input"
+                  [type]="showActual ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  [(ngModel)]="passwordForm.actual" />
+                <button class="input-toggle" (click)="showActual = !showActual">
+                  <span class="material-symbols-outlined">
+                    {{ showActual ? 'visibility_off' : 'visibility' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Nueva Contraseña</label>
+              <div class="input-wrapper">
+                <input
+                  class="form-input"
+                  [type]="showNueva ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  [(ngModel)]="passwordForm.nueva" />
+                <button class="input-toggle" (click)="showNueva = !showNueva">
+                  <span class="material-symbols-outlined">
+                    {{ showNueva ? 'visibility_off' : 'visibility' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Confirmar Nueva Contraseña</label>
+              <div class="input-wrapper">
+                <input
+                  class="form-input"
+                  [type]="showConfirmar ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  [(ngModel)]="passwordForm.confirmar" />
+                <button class="input-toggle" (click)="showConfirmar = !showConfirmar">
+                  <span class="material-symbols-outlined">
+                    {{ showConfirmar ? 'visibility_off' : 'visibility' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+            <button class="btn-primary" (click)="cambiarPassword()" [disabled]="isSubmittingPassword">
+              <span class="material-symbols-outlined">save</span>
+              {{ isSubmittingPassword ? 'Guardando...' : 'Cambiar Contraseña' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- RECUPERAR CONTRASEÑA -->
+        <div class="cfg-card">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">key</span>
+            <div>
+              <h2 class="cfg-card__title">Recuperar Contraseña</h2>
+              <p class="cfg-card__subtitle">Envía una contraseña temporal por correo</p>
+            </div>
+          </div>
+          <div class="cfg-card__body">
+            <p class="cfg-desc">
+              Ingresa el correo registrado y recibirás una contraseña temporal para acceder.
+            </p>
+            <div class="form-field">
+              <label class="form-label">Correo Electrónico</label>
+              <input
+                class="form-input"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                [(ngModel)]="correoRecuperar" />
+            </div>
+            <button class="btn-secondary" (click)="recuperarPassword()" [disabled]="isSubmittingRecuperar">
+              <span class="material-symbols-outlined">send</span>
+              {{ isSubmittingRecuperar ? 'Enviando...' : 'Enviar Contraseña Temporal' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- INFO SPA (solo admin) -->
+        <div class="cfg-card" *ngIf="rol === 'administrador'">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">store</span>
+            <div>
+              <h2 class="cfg-card__title">Información del Spa</h2>
+              <p class="cfg-card__subtitle">Datos generales del negocio</p>
+            </div>
+          </div>
+          <div class="cfg-card__body">
+            <div class="form-field">
+              <label class="form-label">Nombre del Spa</label>
+              <input class="form-input" type="text" [(ngModel)]="infoSpa.nombre" placeholder="Nombre del spa" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Dirección</label>
+              <input class="form-input" type="text" [(ngModel)]="infoSpa.direccion" placeholder="Dirección" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Teléfono</label>
+              <input class="form-input" type="text" [(ngModel)]="infoSpa.telefono" placeholder="Teléfono" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Email de contacto</label>
+              <input class="form-input" type="email" [(ngModel)]="infoSpa.email" placeholder="email@spa.com" />
+            </div>
+            <button class="btn-primary" (click)="guardarInfoSpa()">
+              <span class="material-symbols-outlined">save</span>
+              Guardar Información
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>

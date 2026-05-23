@@ -1,204 +1,175 @@
-<div class="recep-dashboard">
+<app-navbar paginaActiva="inicio"></app-navbar>
 
-  <header class="top-nav">
-    <div class="nav-left">
-      <span class="brand-logo">Sensory Sanctuary</span>
-      <span class="role-badge">Recepción</span>
-      <nav class="main-nav">
-        <a class="nav-link active" href="#">Inicio</a>
-        <a class="nav-link" href="#">Nueva Reserva</a>
-        <a class="nav-link" href="#">Clientes</a>
-        <a class="nav-link" href="#">Agenda</a>
-        <a class="nav-link" href="#">Check-in</a>
-      </nav>
-    </div>
-    <div class="nav-right">
-      <button class="icon-btn"><span class="material-symbols-outlined">notifications</span></button>
-      <button class="icon-btn"><span class="material-symbols-outlined">person</span></button>
-      <button class="btn-cerrar-sesion" (click)="cerrarSesion()">Cerrar sesión</button>
-    </div>
-  </header>
+<div class="recep-shell">
 
-  <main class="main-content">
-    <div class="bg-shape"></div>
+  <main class="recep-main">
 
     <div class="welcome-section">
       <span class="eyebrow">{{ fechaHoy }} · {{ horaActual }}</span>
-      <h2 class="welcome-title">Panel de <em>Recepción</em> · {{ nombre }}</h2>
+      <h1 class="welcome-title">Bienvenida, <em>{{ nombre }}</em></h1>
+      <p class="welcome-sub">Panel de Recepción</p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <button class="action-btn primary">
+    <!-- KPIs -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <span class="material-symbols-outlined kpi-icon">calendar_today</span>
+        <div>
+          <p class="kpi-label">Citas Hoy</p>
+          <p class="kpi-value">{{ citasHoy }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--pendiente">
+        <span class="material-symbols-outlined kpi-icon">schedule</span>
+        <div>
+          <p class="kpi-label">Pendientes</p>
+          <p class="kpi-value">{{ citasPendientes }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--confirmada">
+        <span class="material-symbols-outlined kpi-icon">check_circle</span>
+        <div>
+          <p class="kpi-label">Confirmadas</p>
+          <p class="kpi-value">{{ citasConfirmadas }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--monto">
+        <span class="material-symbols-outlined kpi-icon">payments</span>
+        <div>
+          <p class="kpi-label">Por Cobrar Hoy</p>
+          <p class="kpi-value">${{ totalPendienteHoy | number }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Accesos Rápidos -->
+    <section class="accesos-rapidos">
+      <button class="acceso-btn acceso-btn--primary" (click)="irANuevaReserva()">
         <span class="material-symbols-outlined">add_circle</span>
         Nueva Reserva
       </button>
-      <button class="action-btn">
-        <span class="material-symbols-outlined">person_add</span>
-        Nuevo Cliente
+      <button class="acceso-btn" (click)="irAAgenda()">
+        <span class="material-symbols-outlined">calendar_month</span>
+        Ver Agenda
       </button>
-      <button class="action-btn">
-        <span class="material-symbols-outlined">login</span>
-        Check-in Rápido
-      </button>
-      <button class="action-btn">
+      <button class="acceso-btn" (click)="irAFacturacion()">
         <span class="material-symbols-outlined">receipt_long</span>
-        Cobrar Servicio
+        Facturación
       </button>
-    </div>
+    </section>
 
-    <!-- Main Grid -->
+    <!-- Grid principal -->
     <div class="main-grid">
 
-      <!-- Check-in panel -->
-      <div class="card checkin-card">
+      <!-- Citas de hoy -->
+      <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Citas de Hoy</h3>
-          <div class="header-tabs">
-            <button class="tab active">Todas</button>
-            <button class="tab">Pendientes</button>
-            <button class="tab">Check-in</button>
+          <h2 class="card-title">Citas de Hoy</h2>
+          <div class="filtros-tabs">
+            <button class="tab-btn"
+              [class.tab-btn--active]="filtroActivo === 'todas'"
+              (click)="cambiarFiltro('todas')">Todas</button>
+            <button class="tab-btn"
+              [class.tab-btn--active]="filtroActivo === 'pendientes'"
+              (click)="cambiarFiltro('pendientes')">Pendientes</button>
+            <button class="tab-btn"
+              [class.tab-btn--active]="filtroActivo === 'confirmadas'"
+              (click)="cambiarFiltro('confirmadas')">Confirmadas</button>
           </div>
         </div>
 
-        <div class="checkin-list">
-          <div class="checkin-item done">
-            <div class="ci-time">09:00</div>
-            <div class="ci-info">
-              <p class="ci-client">Sofía Martínez</p>
-              <p class="ci-detail">Masaje Sueco · Elena V. · Sala 2</p>
+        <div class="citas-lista" *ngIf="reservasFiltradas.length > 0; else sinCitas">
+          <div class="cita-item"
+            *ngFor="let r of reservasFiltradas"
+            [class.cita-item--cancelada]="r.estado === 'cancelada'"
+            [class.cita-item--finalizada]="r.estado === 'finalizada'">
+            <div class="cita-hora">{{ r.horaInicio.slice(0,5) }}</div>
+            <div class="cita-info">
+              <p class="cita-cliente">{{ r.nombreCliente }}</p>
+              <p class="cita-detalle">{{ r.nombresServicios?.join(', ') }} · {{ r.nombreTerapeuta }}</p>
             </div>
-            <div class="ci-status-wrap">
-              <span class="ci-status checked"><span class="material-symbols-outlined">check_circle</span> Check-in</span>
-            </div>
-          </div>
-
-          <div class="checkin-item current">
-            <div class="ci-time accent">10:30</div>
-            <div class="ci-info">
-              <p class="ci-client">Valentina Ríos</p>
-              <p class="ci-detail">Facial Luminosidad · Ana K. · Sala 1</p>
-            </div>
-            <div class="ci-status-wrap">
-              <button class="ci-btn">Hacer Check-in</button>
-            </div>
-          </div>
-
-          <div class="checkin-item">
-            <div class="ci-time">12:00</div>
-            <div class="ci-info">
-              <p class="ci-client">Laura Gómez</p>
-              <p class="ci-detail">Aromaterapia · Elena V. · Sala 2</p>
-            </div>
-            <div class="ci-status-wrap">
-              <span class="ci-status pending"><span class="material-symbols-outlined">schedule</span> Esperando</span>
-            </div>
-          </div>
-
-          <div class="checkin-item">
-            <div class="ci-time">02:00</div>
-            <div class="ci-info">
-              <p class="ci-client">Julianna Torres</p>
-              <p class="ci-detail">Tejido Profundo · Elena V. · Sala 2</p>
-            </div>
-            <div class="ci-status-wrap">
-              <span class="ci-status pending"><span class="material-symbols-outlined">schedule</span> Esperando</span>
-            </div>
-          </div>
-
-          <div class="checkin-item cancelled">
-            <div class="ci-time muted">04:00</div>
-            <div class="ci-info">
-              <p class="ci-client muted">Camila Herrera</p>
-              <p class="ci-detail">Masaje Volcánico · Ana K.</p>
-            </div>
-            <div class="ci-status-wrap">
-              <span class="ci-status cancelled"><span class="material-symbols-outlined">cancel</span> Cancelado</span>
+            <div class="cita-acciones">
+              <span class="estado-badge" [class]="getEstadoClass(r.estado)">
+                <span class="material-symbols-outlined">{{ getEstadoIcon(r.estado) }}</span>
+                {{ r.estado }}
+              </span>
+              <button class="btn-confirmar"
+                *ngIf="r.estado === 'pendiente'"
+                (click)="cambiarEstado(r, 'confirmada')">
+                Confirmar
+              </button>
+              <button class="btn-proceso"
+                *ngIf="r.estado === 'confirmada'"
+                (click)="cambiarEstado(r, 'en_proceso')">
+                Iniciar
+              </button>
+              <button class="btn-finalizar"
+                *ngIf="r.estado === 'en_proceso'"
+                (click)="cambiarEstado(r, 'finalizada')">
+                Finalizar
+              </button>
             </div>
           </div>
         </div>
+
+        <ng-template #sinCitas>
+          <div class="empty-state">
+            <span class="material-symbols-outlined">event_busy</span>
+            <p>No hay citas para hoy</p>
+          </div>
+        </ng-template>
       </div>
 
-      <!-- Right Col -->
+      <!-- Columna derecha -->
       <div class="right-col">
 
-        <!-- Search client -->
-        <div class="card search-card">
-          <h3 class="card-title">Buscar Cliente</h3>
+        <!-- Buscar cliente -->
+        <div class="card">
+          <h2 class="card-title">Buscar Cliente</h2>
           <div class="search-box">
-            <span class="material-symbols-outlined search-ic">search</span>
-            <input class="search-input" type="text" placeholder="Nombre, teléfono o correo…" [(ngModel)]="busquedaCliente"/>
+            <span class="material-symbols-outlined">search</span>
+            <input
+              type="text"
+              placeholder="Nombre del cliente..."
+              [(ngModel)]="busquedaCliente"
+              (ngModelChange)="buscarCliente()" />
           </div>
-          <div class="search-result">
-            <div class="result-avatar">JT</div>
-            <div class="result-info">
-              <p class="result-name">Julianna Torres</p>
-              <p class="result-meta">8 visitas · Última: 12 Sep</p>
+          <div class="clientes-lista" *ngIf="clientesEncontrados.length > 0">
+            <div class="cliente-item" *ngFor="let c of clientesEncontrados">
+              <div class="cliente-avatar">{{ c.nombre.charAt(0).toUpperCase() }}</div>
+              <div class="cliente-info">
+                <p class="cliente-nombre">{{ c.nombre }}</p>
+                <p class="cliente-correo">{{ c.correo }}</p>
+              </div>
             </div>
-            <button class="result-btn">Ver perfil</button>
           </div>
+          <p class="buscando-text" *ngIf="buscando">Buscando...</p>
+          <p class="sin-resultados" *ngIf="!buscando && busquedaCliente.length > 1 && clientesEncontrados.length === 0">
+            Sin resultados
+          </p>
         </div>
 
-        <!-- Estado salas -->
-        <div class="card rooms-card">
-          <h3 class="card-title">Estado de Salas</h3>
-          <div class="rooms-grid">
-            <div class="room-item occupied">
-              <div class="room-indicator"></div>
-              <div class="room-info">
-                <p class="room-name">Sala 1</p>
-                <p class="room-detail">Masaje Sueco · hasta 10:00</p>
+        <!-- Terapeutas disponibles -->
+        <div class="card">
+          <h2 class="card-title">Terapeutas</h2>
+          <div class="terapeutas-lista">
+            <div class="terapeuta-item" *ngFor="let t of terapeutas">
+              <div class="terapeuta-avatar">{{ t.nombre.charAt(0).toUpperCase() }}</div>
+              <div class="terapeuta-info">
+                <p class="terapeuta-nombre">{{ t.nombre }}</p>
+                <p class="terapeuta-rol">Terapeuta</p>
               </div>
-              <span class="room-status">Ocupada</span>
+              <span class="terapeuta-badge">Activo</span>
             </div>
-            <div class="room-item free">
-              <div class="room-indicator"></div>
-              <div class="room-info">
-                <p class="room-name">Sala 2</p>
-                <p class="room-detail">Disponible</p>
-              </div>
-              <span class="room-status free-lbl">Libre</span>
-            </div>
-            <div class="room-item occupied">
-              <div class="room-indicator"></div>
-              <div class="room-info">
-                <p class="room-name">Sala 3</p>
-                <p class="room-detail">Aromaterapia · hasta 11:15</p>
-              </div>
-              <span class="room-status">Ocupada</span>
-            </div>
-            <div class="room-item free">
-              <div class="room-indicator"></div>
-              <div class="room-info">
-                <p class="room-name">Sala 4</p>
-                <p class="room-detail">Disponible</p>
-              </div>
-              <span class="room-status free-lbl">Libre</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Caja del día -->
-        <div class="card cash-card">
-          <h3 class="card-title">Caja del Día</h3>
-          <div class="cash-total">
-            <span class="cash-label">Total Cobrado</span>
-            <span class="cash-amount">$485.00</span>
-          </div>
-          <div class="cash-breakdown">
-            <div class="cash-row">
-              <span>Efectivo</span><span>$185.00</span>
-            </div>
-            <div class="cash-row">
-              <span>Tarjeta</span><span>$300.00</span>
-            </div>
-            <div class="cash-row pending-row">
-              <span>Pendiente</span><span>$145.00</span>
+            <div class="empty-state" *ngIf="terapeutas.length === 0">
+              <span class="material-symbols-outlined">person_off</span>
+              <p>Sin terapeutas registrados</p>
             </div>
           </div>
         </div>
 
       </div>
     </div>
+
   </main>
 </div>

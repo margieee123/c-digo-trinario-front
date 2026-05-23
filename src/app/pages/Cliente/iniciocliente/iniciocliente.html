@@ -1,225 +1,478 @@
+<app-navbar paginaActiva="inicio"></app-navbar>
+
 <div class="sanctuary-dashboard">
-
-  <!-- Header -->
-  <header class="top-nav">
-    <div class="nav-left">
-      <span class="brand-logo">Sensory Sanctuary</span>
-      <nav class="main-nav">
-        <a class="nav-link active" href="#">Dashboard</a>
-        <a class="nav-link" href="#">Agenda</a>
-        <a class="nav-link" href="#">Servicios</a>
-        <a class="nav-link" href="#">Clientes</a>
-        <a class="nav-link" href="#">Finanzas</a>
-        <a class="nav-link" href="#">Configuración</a>
-      </nav>
-    </div>
-    <div class="nav-right">
-      <button class="icon-btn">
-        <span class="material-symbols-outlined">notifications</span>
-      </button>
-      <button class="icon-btn">
-        <span class="material-symbols-outlined">person</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- Main -->
   <main class="main-content">
     <div class="bg-accent-shape"></div>
 
     <!-- Welcome -->
     <div class="welcome-section">
-      <span class="eyebrow">Aura de Tranquilidad</span>
-      <h2 class="welcome-title">Bienvenida de nuevo, <em>Julianna</em></h2>
+      <span class="eyebrow">{{ fechaHoy }}</span>
+      <h2 class="welcome-title">Bienvenido, <em>{{ nombre }}</em></h2>
     </div>
 
-    <!-- Bento Grid -->
-    <div class="bento-grid">
-
-      <!-- Next Appointment -->
-      <div class="card card-appointment">
-        <div class="card-bg-image">
-          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg4tYwPag7lz1i3Kr_C4bs5krnfHAzeAEQezH0YCZhOQwoPdkhYwFCu2iwt7c-m6w9aJ6aEOpo92xdfZhYGSf9F-US69PCsSNwTpFEaFTnhtX8OUN2r9ZsyTKAO-K8ybHnw9THtrXhJRTnSXidsJCfIiOGdUgcGuU-lVULRzADLRUDwvOrrWrbXU4aW0RHY6y8Hn8OtKJ_F0z5T4LOvPav9AWhvVT-jfvaPOD_3dR9J9Gdca9C2021mr_1zOtx8PoSn7X50DsSVrI" alt="Piedras">
+    <!-- Próxima cita -->
+    <div class="card card-appointment">
+      <div class="card-bg-image">
+        <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=600&q=70" alt="Spa">
+      </div>
+      <div class="card-body" *ngIf="proximaReserva; else sinReserva">
+        <span class="eyebrow">Tu Próxima Cita</span>
+        <h3 class="card-title">{{ proximaReserva.nombresServicios.join(', ') }}</h3>
+        <div class="appointment-meta">
+          <div>
+            <p class="meta-label">Fecha</p>
+            <p class="meta-value">{{ proximaReserva.fecha }}</p>
+          </div>
+          <div>
+            <p class="meta-label">Hora</p>
+            <p class="meta-value">{{ proximaReserva.horaInicio.slice(0,5) }}</p>
+          </div>
+          <div>
+            <p class="meta-label">Terapeuta</p>
+            <p class="meta-value">{{ proximaReserva.nombreTerapeuta }}</p>
+          </div>
+          <div>
+            <p class="meta-label">Estado</p>
+            <span class="estado-badge" [class]="getEstadoClass(proximaReserva.estado)">
+              {{ proximaReserva.estado }}
+            </span>
+          </div>
         </div>
+      </div>
+      <ng-template #sinReserva>
         <div class="card-body">
-          <span class="eyebrow">Tu Próximo Viaje</span>
-          <h3 class="card-title">Reserva de Tejido Profundo</h3>
-          <div class="appointment-meta">
-            <div>
-              <p class="meta-label">Fecha y Hora</p>
-              <p class="meta-value">14 de Oct, 2024 · 2:00 PM</p>
-            </div>
-            <div>
-              <p class="meta-label">Especialista</p>
-              <p class="meta-value">Elena Vancamp</p>
-            </div>
-          </div>
+          <span class="eyebrow">Sin citas próximas</span>
+          <h3 class="card-title">¿Listo para relajarte?</h3>
+          <p class="meta-label" style="margin-top: 1rem;">Agenda tu próxima visita al spa</p>
         </div>
-        <div class="card-actions">
-          <button class="btn-outline">Reprogramar</button>
-          <button class="btn-ghost-danger">Cancelar</button>
-        </div>
-      </div>
-
-      <!-- Calendar -->
-      <div class="card card-calendar">
-        <div class="calendar-header">
-          <h3 class="calendar-month">Octubre</h3>
-          <div class="calendar-nav">
-            <span class="material-symbols-outlined cal-arrow">chevron_left</span>
-            <span class="material-symbols-outlined cal-arrow">chevron_right</span>
-          </div>
-        </div>
-        <div class="calendar-weekdays">
-          <span>L</span><span>M</span><span>M</span>
-          <span>J</span><span>V</span><span>S</span><span>D</span>
-        </div>
-        <div class="calendar-grid">
-          <div class="cal-day dimmed">28</div>
-          <div class="cal-day dimmed">29</div>
-          <div class="cal-day dimmed">30</div>
-          <div class="cal-day">1</div>
-          <div class="cal-day">2</div>
-          <div class="cal-day">3</div>
-          <div class="cal-day">4</div>
-          <div class="cal-day">5</div>
-          <div class="cal-day">6</div>
-          <div class="cal-day">7</div>
-          <div class="cal-day">8</div>
-          <div class="cal-day">9</div>
-          <div class="cal-day">10</div>
-          <div class="cal-day">11</div>
-          <div class="cal-day">12</div>
-          <div class="cal-day">13</div>
-          <div class="cal-day active">14</div>
-          <div class="cal-day">15</div>
-          <div class="cal-day">16</div>
-          <div class="cal-day marked">17</div>
-          <div class="cal-day">18</div>
-        </div>
+      </ng-template>
+      <div class="card-actions">
+        <button class="btn-outline" (click)="irANuevaReserva()">
+          <span class="material-symbols-outlined" style="font-size:14px">add</span>
+          Nueva Reserva
+        </button>
+        <button class="btn-outline"
+          *ngIf="proximaReserva && (proximaReserva.estado === 'pendiente' || proximaReserva.estado === 'confirmada')"
+          (click)="abrirEditModal(proximaReserva)">
+          <span class="material-symbols-outlined" style="font-size:14px">edit</span>
+          Editar
+        </button>
+        <button class="btn-ghost-danger"
+          *ngIf="proximaReserva && (proximaReserva.estado === 'pendiente' || proximaReserva.estado === 'confirmada')"
+          (click)="abrirModalCancelar(proximaReserva)">
+          Cancelar
+        </button>
       </div>
     </div>
 
-    <!-- Services -->
+    <!-- Calendario tipo Google -->
+    <section class="gcal-section">
+      <div class="gcal-header">
+        <div class="gcal-header-left">
+          <h3 class="gcal-title">Mi Agenda</h3>
+          <span class="gcal-semana-label">{{ semanaLabel }}</span>
+        </div>
+        <div class="gcal-nav">
+          <button class="gcal-nav-btn" (click)="semanaAnterior()">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="gcal-nav-btn" (click)="semanaSiguiente()">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+      <div class="gcal-grid-wrap">
+        <div class="gcal-dias-header">
+          <div class="gcal-hora-placeholder"></div>
+          <div class="gcal-dia-label"
+            *ngFor="let dia of semana; let i = index"
+            [class.gcal-dia-hoy]="dia.esHoy">
+            <span class="gcal-dia-nombre">{{ diasSemanaLabel[i] }}</span>
+            <span class="gcal-dia-num" [class.gcal-dia-num--hoy]="dia.esHoy">
+              {{ dia.fecha.getDate() }}
+            </span>
+          </div>
+        </div>
+        <div class="gcal-scroll">
+          <div class="gcal-grid">
+            <ng-container *ngFor="let hora of horasCalendario">
+              <div class="gcal-hora-label">{{ hora }}:00</div>
+              <div class="gcal-slot"
+                *ngFor="let dia of semana"
+                (click)="clickSlotVacio(dia, hora)">
+                <ng-container *ngIf="getReservaEnSlot(dia, hora) as reserva">
+                  <div class="gcal-evento"
+                    [class]="getEstadoColorCalendario(reserva.estado)"
+                    [style.height.px]="getAltoEvento(reserva)"
+                    (click)="clickReserva(reserva, $event)">
+                    <span class="gcal-evento-hora">{{ reserva.horaInicio.slice(0,5) }}</span>
+                    <span class="gcal-evento-servicio">{{ reserva.nombresServicios[0] }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios -->
     <section class="services-section">
       <div class="section-header">
         <div>
           <span class="eyebrow">Descubrir</span>
-          <h3 class="section-title">Tratamientos Distintivos</h3>
+          <h3 class="section-title">Nuestros Tratamientos</h3>
         </div>
-        <a class="link-subtle" href="#">Ver Menú Completo</a>
+        <button class="link-subtle" (click)="irANuevaReserva()">Reservar Ahora</button>
       </div>
       <div class="services-scroll">
-
-        <div class="service-card">
+        <div class="service-card" *ngFor="let s of servicios" (click)="irANuevaReserva()">
           <div class="service-img-wrap">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn8RnTTox2KY2FdPeeUu0nDQ3tXlduabQxt-5uPneq60iIAx8-e-Po-osqaiJ62D26QhHulZh8aiPtHTSFVy6tAJugK8IyOKgqBZK41uO4zlaJvXUWEF0K-yFhoj6L6XO4Ydw6oePdpm2n4mAK6zbyPyHI5Tdc5F6n69RFQ6hH_AGWCs_1lqIHS7A8X1rOPStrrbDz3O4h7T5-Ja_Xhm6cPQq3kmxTLGaE3bjOfbh-Y4hyWhX4D8r6TFnc01FPYpCUZhh0qH-swX8" alt="Masaje Volcánico">
+            <img [src]="s.imagenUrl || 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=400&q=60'" [alt]="s.nombre">
             <div class="service-overlay"></div>
-            <span class="service-badge">60-90 Min</span>
+            <span class="service-badge">{{ s.duracionMinutos }} Min</span>
           </div>
-          <h4 class="service-name">Masaje con Piedras Volcánicas</h4>
-          <p class="service-desc">Relajación muscular profunda utilizando minerales terrestres calientes.</p>
+          <h4 class="service-name">{{ s.nombre }}</h4>
+          <p class="service-desc">{{ s.descripcion }}</p>
+          <p class="service-price">${{ s.precio | number }}</p>
         </div>
-
-        <div class="service-card">
-          <div class="service-img-wrap">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDin3jqHtOj80_sWdxkIYhpDidRHezXWtMb4xecRFbBrtTuV4fg6TNnX09X3o7zRyScOwQ98ZNAslAJzh7dQVVrzVo00bhnjxc1k_fEDAdWFFK6Lu4kWnTTkoxtyjwKwm8BJNOMOEFjQf8EsMGr47cc0VzvXZImvCKa8tzrp7yoJ5iXXOkerDn6ZMXk937sIuA3WJFq2h4sW9Zz_BzR22pR-GUbdJWrVLOoP-7SA7FcoOzPbjf8OpMOgCNCNwnh3frz8vd4ajxArk" alt="Facial">
-            <div class="service-overlay"></div>
-            <span class="service-badge">45 Min</span>
-          </div>
-          <h4 class="service-name">Facial de Luminosidad Radiante</h4>
-          <p class="service-desc">Tratamiento con infusión de oxígeno para una luminosidad inmediata.</p>
+        <div class="empty-state" *ngIf="servicios.length === 0">
+          <p>Sin servicios disponibles</p>
         </div>
-
-        <div class="service-card">
-          <div class="service-img-wrap">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvdL87PYNDhZOstYxlSm6fPUxrXCWawtx12YcJKlonk6XUYNabaYxa_bJMTmrHYJeis6sc6VbVeWs95ISY-esd5lg2s3bESzU1RMvfNG3tX-WScSC54Txw6Zy0GIJzTjqg8s6xGrfik1ez7IkkKPftVc7P56ZbA7zMn8UBt89_04skh45X1MasgTsR5uTvjLc5yAce8" alt="Aromaterapia">
-            <div class="service-overlay"></div>
-            <span class="service-badge">75 Min</span>
-          </div>
-          <h4 class="service-name">Aromaterapia Botánica</h4>
-          <p class="service-desc">Un viaje sensorial a través de raros aceites botánicos alpinos.</p>
-        </div>
-
       </div>
     </section>
 
-    <!-- Bottom Section -->
-    <div class="bottom-grid">
-
-      <!-- History -->
-      <div class="card history-card">
-        <h3 class="section-title">Experiencias Pasadas</h3>
-        <div class="history-list">
-          <div class="history-item">
-            <div class="history-left">
-              <div class="history-icon">
-                <span class="material-symbols-outlined">spa</span>
-              </div>
-              <div>
-                <h5 class="history-name">Masaje de Serenidad Sueco</h5>
-                <p class="history-date">12 de Sept, 2024</p>
-              </div>
+    <!-- Historial -->
+    <div class="card history-card">
+      <h3 class="section-title">Mis Reservas</h3>
+      <div class="history-list" *ngIf="misReservas.length > 0; else sinHistorial">
+        <div class="history-item" *ngFor="let r of misReservas.slice(0, 5)">
+          <div class="history-left">
+            <div class="history-icon">
+              <span class="material-symbols-outlined">spa</span>
             </div>
-            <div class="history-right">
-              <span class="history-price">$145.00</span>
-              <span class="history-status">Completado</span>
+            <div>
+              <h5 class="history-name">{{ r.nombresServicios.join(', ') }}</h5>
+              <p class="history-date">{{ r.fecha }} · {{ r.horaInicio.slice(0,5) }}</p>
+              <p class="history-date">{{ r.nombreTerapeuta }}</p>
             </div>
           </div>
-          <div class="history-item">
-            <div class="history-left">
-              <div class="history-icon">
-                <span class="material-symbols-outlined">face</span>
-              </div>
-              <div>
-                <h5 class="history-name">Facial Hydra-Infusion</h5>
-                <p class="history-date">28 de Ago, 2024</p>
-              </div>
-            </div>
-            <div class="history-right">
-              <span class="history-price">$180.00</span>
-              <span class="history-status">Completado</span>
-            </div>
+          <div class="history-right">
+            <span class="history-price">${{ r.totalServicios | number }}</span>
+            <span class="estado-badge" [class]="getEstadoClass(r.estado)">{{ r.estado }}</span>
+            <button class="btn-outline"
+              *ngIf="r.estado === 'pendiente' || r.estado === 'confirmada'"
+              (click)="abrirEditModal(r)">
+              <span class="material-symbols-outlined" style="font-size:12px">edit</span>
+              Editar
+            </button>
+            <button class="btn-ghost-danger"
+              *ngIf="r.estado === 'pendiente' || r.estado === 'confirmada'"
+              (click)="abrirModalCancelar(r)">
+              Cancelar
+            </button>
           </div>
         </div>
       </div>
-
-      <!-- Rating -->
-      <div class="card rating-card glass">
-        <h3 class="card-title-sm">Califica tu Experiencia</h3>
-        <p class="rating-subtitle">¿Cómo estuvo tu visita el 12 de Sept?</p>
-        <div class="stars">
-          <span class="material-symbols-outlined star filled">star</span>
-          <span class="material-symbols-outlined star filled">star</span>
-          <span class="material-symbols-outlined star filled">star</span>
-          <span class="material-symbols-outlined star filled">star</span>
-          <span class="material-symbols-outlined star empty">star</span>
+      <ng-template #sinHistorial>
+        <div class="empty-state">
+          <span class="material-symbols-outlined">event_busy</span>
+          <p>No tienes reservas aún</p>
         </div>
-        <textarea class="review-input" placeholder="Comparte tus pensamientos..." rows="3"></textarea>
-        <button class="btn-submit">Enviar Comentarios</button>
-      </div>
-
+      </ng-template>
     </div>
+
+    <!-- Calificación -->
+    <div class="card rating-card">
+      <h3 class="card-title-sm">Califica tu Experiencia</h3>
+      <p class="rating-subtitle">¿Cómo estuvo tu última visita?</p>
+      <div class="stars">
+        <span class="material-symbols-outlined star"
+          *ngFor="let i of [1,2,3,4,5]"
+          [class.filled]="i <= calificacion"
+          [class.empty]="i > calificacion"
+          (click)="setCalificacion(i)">star</span>
+      </div>
+      <textarea class="review-input"
+        placeholder="Comparte tus pensamientos..."
+        rows="3"
+        [(ngModel)]="comentario">
+      </textarea>
+      <button class="btn-submit" (click)="enviarComentario()">
+        Enviar Comentarios
+      </button>
+    </div>
+
   </main>
 
   <!-- Mobile Bottom Nav -->
   <nav class="mobile-nav">
-    <a class="mobile-nav-item active" href="#">
+    <a class="mobile-nav-item active" [routerLink]="['/dashboard/cliente']">
       <span class="material-symbols-outlined">dashboard</span>
       <span>Inicio</span>
     </a>
-    <a class="mobile-nav-item" href="#">
+    <button class="mobile-nav-item" (click)="irANuevaReserva()">
       <span class="material-symbols-outlined">calendar_month</span>
       <span>Reservar</span>
-    </a>
-    <a class="mobile-nav-item" href="#">
-      <span class="material-symbols-outlined">spa</span>
-      <span>Menú</span>
-    </a>
-    <a class="mobile-nav-item" href="#">
+    </button>
+    <a class="mobile-nav-item" [routerLink]="['/dashboard/configuracion']">
       <span class="material-symbols-outlined">settings</span>
       <span>Perfil</span>
     </a>
   </nav>
+</div>
 
+<!-- Modal Nueva Reserva -->
+<div class="modal-backdrop" [class.open]="modalAbierto">
+  <div class="modal modal--wide">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Nueva Reserva</span>
+        <h2 class="modal__title">Selecciona tus Servicios</h2>
+      </div>
+      <button class="modal__close" (click)="cerrarModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div class="reserva-meta">
+        <div class="reserva-meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ fechaSeleccionada }}</span>
+        </div>
+        <div class="reserva-meta-item">
+          <span class="material-symbols-outlined">schedule</span>
+          <span>{{ horaSeleccionada.slice(0,5) }}</span>
+        </div>
+        <div class="reserva-meta-item" *ngIf="duracionTotal > 0">
+          <span class="material-symbols-outlined">timer</span>
+          <span>{{ duracionTotal }} min</span>
+        </div>
+      </div>
+      <div class="servicios-grid">
+        <div class="servicio-item"
+          *ngFor="let s of servicios"
+          [class.servicio-item--activo]="isServicioSeleccionado(s.idServicio)"
+          (click)="toggleServicio(s.idServicio)">
+          <div class="servicio-check">
+            <span class="material-symbols-outlined">
+              {{ isServicioSeleccionado(s.idServicio) ? 'check_box' : 'check_box_outline_blank' }}
+            </span>
+          </div>
+          <div class="servicio-info">
+            <p class="servicio-nombre">{{ s.nombre }}</p>
+            <p class="servicio-meta">{{ s.duracionMinutos }} min · ${{ s.precio | number }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="reserva-total" *ngIf="serviciosSeleccionados.length > 0">
+        <span class="reserva-total-label">Total estimado</span>
+        <span class="reserva-total-monto">${{ precioTotal | number }}</span>
+      </div>
+      <div class="disponibilidad-msg" *ngIf="mensajeDisponibilidad">
+        <span class="material-symbols-outlined">warning</span>
+        {{ mensajeDisponibilidad }}
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primary"
+        [disabled]="serviciosSeleccionados.length === 0 || creandoReserva"
+        (click)="crearReserva()">
+        <span class="material-symbols-outlined" *ngIf="!creandoReserva">check</span>
+        <span *ngIf="creandoReserva">Procesando...</span>
+        <span *ngIf="!creandoReserva">Confirmar Reserva</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle Reserva -->
+<div class="modal-backdrop" [class.open]="modalDetalleAbierto">
+  <div class="modal">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Detalle</span>
+        <h2 class="modal__title">Mi Reserva</h2>
+      </div>
+      <button class="modal__close" (click)="modalDetalleAbierto = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body" *ngIf="reservaDetalle">
+      <div class="detalle-grid">
+        <div class="detalle-section">
+          <p class="detalle-label">Fecha</p>
+          <p class="detalle-value">{{ reservaDetalle.fecha }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Hora</p>
+          <p class="detalle-value">{{ reservaDetalle.horaInicio.slice(0,5) }} — {{ reservaDetalle.horaFin.slice(0,5) }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Terapeuta</p>
+          <p class="detalle-value">{{ reservaDetalle.nombreTerapeuta }}</p>
+        </div>
+        <div class="detalle-section">
+          <p class="detalle-label">Estado</p>
+          <span class="estado-badge" [class]="getEstadoClass(reservaDetalle.estado)">
+            {{ reservaDetalle.estado }}
+          </span>
+        </div>
+        <div class="detalle-section detalle-section--full">
+          <p class="detalle-label">Servicios</p>
+          <p class="detalle-value">{{ reservaDetalle.nombresServicios.join(', ') }}</p>
+        </div>
+        <div class="detalle-section detalle-section--full">
+          <p class="detalle-label">Total</p>
+          <p class="detalle-value">${{ reservaDetalle.totalServicios | number }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="modalDetalleAbierto = false">Cerrar</button>
+      <button class="btn-outline"
+        *ngIf="reservaDetalle && (reservaDetalle.estado === 'pendiente' || reservaDetalle.estado === 'confirmada')"
+        (click)="abrirEditModal(reservaDetalle!)">
+        <span class="material-symbols-outlined" style="font-size:14px">edit</span>
+        Editar
+      </button>
+      <button class="btn-danger"
+        *ngIf="reservaDetalle && (reservaDetalle.estado === 'pendiente' || reservaDetalle.estado === 'confirmada')"
+        (click)="abrirModalCancelar(reservaDetalle!)">
+        Cancelar Reserva
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Reserva -->
+<div class="modal-backdrop" [class.open]="showEditModal" (click)="cerrarEditModal()">
+  <div class="modal-edit" (click)="$event.stopPropagation()">
+    <div class="modal-edit__header">
+      <div>
+        <span class="modal-edit__eyebrow">Reserva #{{ reservaEditando?.idReserva }}</span>
+        <h2 class="modal-edit__title">Editar Reserva</h2>
+      </div>
+      <button class="modal-edit__close" (click)="cerrarEditModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-edit__body" *ngIf="reservaEditando">
+      <div class="edit-info">
+        <p class="edit-info__label">Servicios actuales</p>
+        <p class="edit-info__value">{{ reservaEditando.nombresServicios.join(', ') }}</p>
+      </div>
+      <div class="edit-info">
+        <p class="edit-info__label">Terapeuta asignado</p>
+        <p class="edit-info__value">{{ reservaEditando.nombreTerapeuta }}
+          <span style="font-size:0.72rem; color: var(--text-muted)"> (puede cambiar según disponibilidad)</span>
+        </p>
+      </div>
+      <div class="edit-grid">
+        <div class="edit-field">
+          <label class="edit-label">Fecha</label>
+          <input class="edit-input" type="date" [(ngModel)]="editForm.fecha" />
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">Hora inicio</label>
+          <input class="edit-input" type="time" [(ngModel)]="editForm.horaInicio" />
+        </div>
+      </div>
+      <div class="disponibilidad-msg" *ngIf="mensajeEditDisponibilidad">
+        <span class="material-symbols-outlined">warning</span>
+        {{ mensajeEditDisponibilidad }}
+      </div>
+    </div>
+    <div class="modal-edit__footer">
+      <button class="btn-ghost" (click)="cerrarEditModal()">Cancelar</button>
+      <button class="btn-ghost" style="border-color: rgba(227,193,144,0.3); color: #e3c190;"
+        (click)="abrirEditServicios($event)">
+        <span class="material-symbols-outlined" style="font-size:14px">edit</span>
+        Editar Servicios
+      </button>
+      <button class="btn-primary"
+        [disabled]="isSubmittingEdit"
+        (click)="guardarEdicion()">
+        <span class="material-symbols-outlined">save</span>
+        {{ isSubmittingEdit ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Servicios -->
+<div class="modal-backdrop" [class.open]="showEditServiciosModal" (click)="cerrarEditServicios()">
+  <div class="modal-edit" style="max-width: 560px" (click)="$event.stopPropagation()">
+    <div class="modal-edit__header">
+      <div>
+        <span class="modal-edit__eyebrow">Reserva #{{ reservaEditando?.idReserva }}</span>
+        <h2 class="modal-edit__title">Editar Servicios</h2>
+      </div>
+      <button class="modal-edit__close" (click)="cerrarEditServicios()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-edit__body">
+      <p style="font-size:0.82rem; color: rgba(229,226,225,0.6); margin:0 0 1rem">
+        Selecciona los servicios para esta reserva:
+      </p>
+      <div class="servicios-grid-edit">
+        <div class="servicio-edit-item"
+          *ngFor="let s of servicios"
+          [class.servicio-edit-item--activo]="estaSeleccionadoEdit(s.idServicio)"
+          (click)="toggleServicioEdit(s.idServicio)">
+          <div class="servicio-edit-check">
+            <span class="material-symbols-outlined">
+              {{ estaSeleccionadoEdit(s.idServicio) ? 'check_box' : 'check_box_outline_blank' }}
+            </span>
+          </div>
+          <div class="servicio-edit-info">
+            <p class="servicio-edit-nombre">{{ s.nombre }}</p>
+            <p class="servicio-edit-meta">{{ s.duracionMinutos }} min · ${{ s.precio | number }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-edit__footer">
+      <button class="btn-ghost" (click)="cerrarEditServicios()">Cancelar</button>
+      <button class="btn-primary"
+        [disabled]="serviciosEditando.length === 0"
+        (click)="cerrarEditServicios()">
+        <span class="material-symbols-outlined">check</span>
+        Listo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Cancelación -->
+<div class="modal-backdrop" [class.open]="modalCancelarAbierto">
+  <div class="modal">
+    <div class="modal__header">
+      <div>
+        <span class="modal__eyebrow">Confirmar</span>
+        <h2 class="modal__title">Cancelar Reserva</h2>
+      </div>
+      <button class="modal__close" (click)="modalCancelarAbierto = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal__body">
+      <p class="modal__desc">¿Estás seguro de que deseas cancelar esta reserva? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" (click)="modalCancelarAbierto = false">No, mantener</button>
+      <button class="btn-danger" (click)="confirmarCancelacion()">Sí, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container">
+  <div class="toast" *ngFor="let t of toasts"
+    [class.toast--success]="t.type === 'success'"
+    [class.toast--error]="t.type === 'error'">
+    {{ t.message }}
+  </div>
 </div>

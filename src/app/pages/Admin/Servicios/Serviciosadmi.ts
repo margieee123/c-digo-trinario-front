@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Navbar } from '../../../components/navbar/navbar';
 
 interface Servicio {
   idServicio: number;
@@ -32,7 +33,7 @@ interface ServicioForm {
 @Component({
   selector: 'app-serviciosadmi',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Navbar],
   templateUrl: './Serviciosadmi.html',
   styleUrls: ['./Serviciosadmi.css'],
 })
@@ -75,24 +76,21 @@ export class Serviciosadmi implements OnInit {
         this.services = [...data];
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('error al cargar:', err);
-        this.showToast('Error al cargar servicios', 'error');
-      }
+      error: () => this.showToast('Error al cargar servicios', 'error')
     });
   }
 
   get serviciosFiltrados(): Servicio[] {
-  let lista = this.mostrarInactivos
-    ? this.services.filter(s => s.estado === 'inactivo')
-    : this.services.filter(s => s.estado === 'activo');
-  if (!this.busqueda.trim()) return lista;
-  const q = this.busqueda.toLowerCase();
-  return lista.filter(s =>
-    s.nombre.toLowerCase().includes(q) ||
-    (s.descripcion?.toLowerCase().includes(q) ?? false)
-  );
-}
+    let lista = this.mostrarInactivos
+      ? this.services.filter(s => s.estado === 'inactivo')
+      : this.services.filter(s => s.estado === 'activo');
+    if (!this.busqueda.trim()) return lista;
+    const q = this.busqueda.toLowerCase();
+    return lista.filter(s =>
+      s.nombre.toLowerCase().includes(q) ||
+      (s.descripcion?.toLowerCase().includes(q) ?? false)
+    );
+  }
 
   get pageItems(): Servicio[] {
     const start = this.currentPage * this.itemsPerPage;
@@ -186,11 +184,30 @@ export class Serviciosadmi implements OnInit {
     }
   }
 
-  openConfirmDelete(svc: Servicio): void {
-    this.deletingId = svc.idServicio;
-    this.deletingName = svc.nombre;
-    this.showConfirmModal = true;
-    document.body.style.overflow = 'hidden';
+  // Abre confirmación solo si está activo, activa directo si está inactivo
+  accionEstado(svc: Servicio): void {
+    if (svc.estado === 'activo') {
+      this.deletingId = svc.idServicio;
+      this.deletingName = svc.nombre;
+      this.showConfirmModal = true;
+      document.body.style.overflow = 'hidden';
+    } else {
+      this.activar(svc.idServicio);
+    }
+  }
+
+  activar(id: number): void {
+    this.http.patch(
+      `${this.apiUrl}/${id}/estado?estado=activo`,
+      {},
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: () => {
+        this.showToast('Servicio activado', 'success');
+        this.cargarServicios();
+      },
+      error: () => this.showToast('Error al activar servicio', 'error')
+    });
   }
 
   closeConfirmModal(): void {
@@ -198,9 +215,13 @@ export class Serviciosadmi implements OnInit {
     document.body.style.overflow = '';
   }
 
-  confirmDelete(): void {
+  confirmDesactivar(): void {
     if (!this.deletingId) return;
-    this.http.delete(`${this.apiUrl}/${this.deletingId}`, { headers: this.getHeaders() }).subscribe({
+    this.http.patch(
+      `${this.apiUrl}/${this.deletingId}/estado?estado=inactivo`,
+      {},
+      { headers: this.getHeaders() }
+    ).subscribe({
       next: () => {
         this.showToast(`"${this.deletingName}" desactivado`, 'info');
         this.deletingId = null;

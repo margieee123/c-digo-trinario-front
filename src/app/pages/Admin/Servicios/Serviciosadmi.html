@@ -1,26 +1,4 @@
-<header class="navbar">
-  <nav class="navbar__inner">
-    <div class="navbar__left">
-      <span class="navbar__brand">SpaApp</span>
-      <ul class="navbar__nav">
-        <li><a [routerLink]="['/dashboard/admin']">Inicio</a></li>
-        <li><a [routerLink]="['/dashboard/admin/agenda']">Agenda</a></li>
-        <li><a class="active">Servicios</a></li>
-        <li><a [routerLink]="['/dashboard/admin/usuarios']">Usuarios</a></li>
-        <li><a>Facturación</a></li>
-        <li><a>Configuración</a></li>
-      </ul>
-    </div>
-    <div class="navbar__right">
-      <button class="navbar__icon-btn" aria-label="Notificaciones">
-        <span class="material-symbols-outlined">notifications</span>
-      </button>
-      <div class="navbar__user-avatar">A</div>
-      <button class="navbar__logout-btn">Cerrar sesión</button>
-    </div>
-  </nav>
-</header>
-
+<app-navbar paginaActiva="servicios"></app-navbar>
 <main class="main">
 
   <div class="page-header">
@@ -88,9 +66,12 @@
           </button>
           <button
             class="service-card__action-btn service-card__action-btn--delete"
-            (click)="openConfirmDelete(svc)"
-            aria-label="Desactivar">
-            <span class="material-symbols-outlined">block</span>
+            (click)="accionEstado(svc)"
+            [title]="svc.estado === 'activo' ? 'Desactivar' : 'Activar'"
+            aria-label="Cambiar estado">
+            <span class="material-symbols-outlined">
+              {{ svc.estado === 'activo' ? 'block' : 'check_circle' }}
+            </span>
           </button>
         </div>
       </div>
@@ -225,7 +206,7 @@
     </p>
     <div class="confirm-dialog__actions">
       <button class="btn-ghost" (click)="closeConfirmModal()">Cancelar</button>
-      <button class="btn-danger" (click)="confirmDelete()">
+      <button class="btn-danger" (click)="confirmDesactivar()">
         <span class="material-symbols-outlined">block</span>
         Desactivar
       </button>

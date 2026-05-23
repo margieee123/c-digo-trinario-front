@@ -1,62 +1,49 @@
+<app-navbar paginaActiva="inicio"></app-navbar>
+
 <div class="esp-shell">
-
-  <!-- HEADER -->
-  <header class="esp-header">
-    <div class="header-left">
-      <h1 class="brand-name">SpaApp</h1>
-      <div class="search-box">
-        <span class="material-symbols-outlined search-ic">search</span>
-        <input type="text" placeholder="Buscar..." class="search-input" />
-      </div>
-    </div>
-
-    <nav class="main-nav">
-      <a class="nav-link active" href="#">Dashboard</a>
-      <a class="nav-link" href="#">Agenda</a>
-      <a class="nav-link" href="#">Servicios</a>
-      <a class="nav-link" href="#">Clientes</a>
-      <a class="nav-link" href="#">Finanzas</a>
-      <a class="nav-link" href="#">Configuración</a>
-    </nav>
-
-    <div class="header-right">
-      <button class="notif-btn">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="notif-dot"></span>
-      </button>
-      <div class="avatar-wrap">
-        <div class="avatar-initials">{{ iniciales }}</div>
-        <span class="material-symbols-outlined avatar-ic">person</span>
-      </div>
-      <button class="btn-cerrar-sesion" (click)="cerrarSesion()">Cerrar sesión</button>
-    </div>
-  </header>
-
-  <!-- MAIN -->
   <main class="esp-main">
     <div class="page-wrapper">
 
-      <!-- PAGE TITLE ROW -->
+      <!-- PAGE TITLE -->
       <div class="page-title-row">
         <div>
-          <span class="eyebrow">Vista del Terapeuta</span>
-          <h2 class="page-title">Buenos días, <em>{{ nombre }}</em></h2>
+          <span class="eyebrow">{{ fechaHoy }} · {{ horaActual }}</span>
+          <h2 class="page-title">Bienvenido, <em>{{ nombre }}</em></h2>
+          <p class="page-sub">Panel del Terapeuta</p>
         </div>
-        <button class="btn-primary">
-          <span class="material-symbols-outlined">add</span>
-          Reserva Manual
+        <button class="btn-primary" (click)="irAAgenda()">
+          <span class="material-symbols-outlined">calendar_month</span>
+          Ver Agenda
         </button>
       </div>
 
-      <!-- STATS GRID -->
+      <!-- STATS -->
       <div class="stats-grid">
-        <div class="stat-card" *ngFor="let s of stats">
+        <div class="stat-card">
           <div class="stat-info">
-            <p class="stat-label">{{ s.label }}</p>
-            <p class="stat-value">{{ s.valor }}</p>
+            <p class="stat-label">Citas de Hoy</p>
+            <p class="stat-value">{{ citasHoy }}</p>
           </div>
           <div class="stat-icon">
-            <span class="material-symbols-outlined">{{ s.icono }}</span>
+            <span class="material-symbols-outlined">event_available</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <p class="stat-label">Citas esta Semana</p>
+            <p class="stat-value">{{ citasSemana }}</p>
+          </div>
+          <div class="stat-icon">
+            <span class="material-symbols-outlined">calendar_month</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <p class="stat-label">En Proceso</p>
+            <p class="stat-value">{{ reservaActual ? '1' : '0' }}</p>
+          </div>
+          <div class="stat-icon">
+            <span class="material-symbols-outlined">play_circle</span>
           </div>
         </div>
       </div>
@@ -64,79 +51,101 @@
       <!-- CONTENT GRID -->
       <div class="content-grid">
 
-        <!-- LEFT: AGENDA -->
+        <!-- AGENDA HOY -->
         <section class="agenda-col">
           <div class="agenda-header">
             <h3 class="section-title">Horario de Hoy</h3>
             <div class="view-toggle">
-              <button class="toggle-btn active">Diario</button>
-              <button class="toggle-btn">Semanal</button>
+              <button class="toggle-btn"
+                [class.active]="vistaActiva === 'diario'"
+                (click)="vistaActiva = 'diario'">Diario</button>
+              <button class="toggle-btn"
+                [class.active]="vistaActiva === 'semanal'"
+                (click)="vistaActiva = 'semanal'">Semanal</button>
             </div>
           </div>
 
-          <div class="appt-list">
-
-            <ng-container *ngFor="let cita of agenda">
-
-              <!-- Cita activa (EN PROCESO) -->
-              <div class="appt-card appt-active" *ngIf="cita.actual && !cita.descanso">
+          <!-- VISTA DIARIA -->
+          <div class="appt-list" *ngIf="vistaActiva === 'diario'">
+            <ng-container *ngIf="reservasHoy.length > 0; else sinCitasHoy">
+              <div class="appt-card"
+                *ngFor="let r of reservasHoy"
+                [class.appt-active]="r.estado === 'en_proceso'"
+                [class.appt-pending]="r.estado === 'pendiente' || r.estado === 'confirmada'"
+                [class.appt-done]="r.estado === 'finalizada'"
+                [class.appt-cancelled]="r.estado === 'cancelada'">
                 <div class="appt-time">
-                  <span class="appt-hour highlight">{{ cita.hora }}</span>
-                  <span class="appt-dur">{{ cita.duracion }}</span>
+                  <span class="appt-hour" [class.highlight]="r.estado === 'en_proceso'">
+                    {{ r.horaInicio.slice(0,5) }}
+                  </span>
+                  <span class="appt-dur">{{ r.horaFin.slice(0,5) }}</span>
                 </div>
                 <div class="appt-divider"></div>
                 <div class="appt-info">
-                  <h4 class="appt-service">{{ cita.servicio }}</h4>
-                  <p class="appt-meta">Cliente: {{ cita.cliente }} &bull; {{ cita.notas }}</p>
+                  <h4 class="appt-service">{{ r.nombresServicios?.join(', ') }}</h4>
+                  <p class="appt-meta">Cliente: {{ r.nombreCliente }}</p>
                 </div>
                 <div class="appt-actions">
-                  <span class="badge badge-active">En Proceso</span>
-                  <button class="icon-btn">
-                    <span class="material-symbols-outlined">more_vert</span>
+                  <span class="badge" [class]="getEstadoClass(r.estado)">
+                    <span class="material-symbols-outlined">{{ getEstadoIcon(r.estado) }}</span>
+                    {{ r.estado }}
+                  </span>
+                  <button class="btn-start"
+                    *ngIf="r.estado === 'confirmada'"
+                    (click)="cambiarEstado(r, 'en_proceso')">
+                    Iniciar
+                  </button>
+                  <button class="btn-start"
+                    *ngIf="r.estado === 'en_proceso'"
+                    (click)="cambiarEstado(r, 'finalizada')">
+                    Finalizar
                   </button>
                 </div>
               </div>
+            </ng-container>
+            <ng-template #sinCitasHoy>
+              <div class="empty-state">
+                <span class="material-symbols-outlined">event_busy</span>
+                <p>No hay citas para hoy</p>
+              </div>
+            </ng-template>
+          </div>
 
-              <!-- Cita pendiente -->
-              <div class="appt-card appt-pending" *ngIf="!cita.actual && !cita.descanso">
+          <!-- VISTA SEMANAL -->
+          <div class="appt-list" *ngIf="vistaActiva === 'semanal'">
+            <ng-container *ngIf="reservasSemana.length > 0; else sinCitasSemana">
+              <div class="appt-card appt-pending"
+                *ngFor="let r of reservasSemana">
                 <div class="appt-time">
-                  <span class="appt-hour">{{ cita.hora }}</span>
-                  <span class="appt-dur">{{ cita.duracion }}</span>
+                  <span class="appt-hour">{{ r.fecha }}</span>
+                  <span class="appt-dur">{{ r.horaInicio.slice(0,5) }}</span>
                 </div>
                 <div class="appt-divider"></div>
                 <div class="appt-info">
-                  <h4 class="appt-service">{{ cita.servicio }}</h4>
-                  <p class="appt-meta">Cliente: {{ cita.cliente }} &bull; {{ cita.notas }}</p>
+                  <h4 class="appt-service">{{ r.nombresServicios?.join(', ') }}</h4>
+                  <p class="appt-meta">Cliente: {{ r.nombreCliente }}</p>
                 </div>
                 <div class="appt-actions">
-                  <span class="badge badge-pending">Pendiente</span>
-                  <button class="btn-start">Iniciar Sesión</button>
+                  <span class="badge" [class]="getEstadoClass(r.estado)">
+                    {{ r.estado }}
+                  </span>
                 </div>
               </div>
-
-              <!-- Descanso -->
-              <div class="appt-card appt-break" *ngIf="cita.descanso">
-                <div class="appt-time">
-                  <span class="appt-hour muted">{{ cita.hora }}</span>
-                  <span class="appt-dur">{{ cita.duracion }}</span>
-                </div>
-                <div class="appt-divider"></div>
-                <div class="appt-info break-info">
-                  <span class="material-symbols-outlined break-ic">free_breakfast</span>
-                  <span class="break-label">Descanso</span>
-                </div>
-              </div>
-
             </ng-container>
-
+            <ng-template #sinCitasSemana>
+              <div class="empty-state">
+                <span class="material-symbols-outlined">event_busy</span>
+                <p>No hay citas esta semana</p>
+              </div>
+            </ng-template>
           </div>
         </section>
 
-        <!-- RIGHT: PANEL CONTEXTUAL -->
+        <!-- PANEL CONTEXTUAL -->
         <aside class="context-col">
 
           <!-- Sesión Actual -->
-          <div class="ctx-card session-card">
+          <div class="ctx-card session-card" *ngIf="reservaActual; else sinSesion">
             <div class="session-bg-ic">
               <span class="material-symbols-outlined">spa</span>
             </div>
@@ -146,53 +155,54 @@
                 <span class="material-symbols-outlined client-avatar-ic">person</span>
               </div>
               <div>
-                <p class="client-name">{{ proximaCita.cliente }}</p>
-                <p class="client-badge">Miembro Premium</p>
+                <p class="client-name">{{ reservaActual.nombreCliente }}</p>
+                <p class="client-badge">{{ reservaActual.nombresServicios?.join(', ') }}</p>
               </div>
             </div>
-            <div class="session-progress">
-              <div class="progress-row">
-                <span class="prog-label">Progreso</span>
-                <span class="prog-value">24 / 60 min</span>
-              </div>
-              <div class="prog-track">
-                <div class="prog-fill" style="width: 40%"></div>
-              </div>
+            <div class="session-info">
+              <p class="session-hora">
+                {{ reservaActual.horaInicio.slice(0,5) }} — {{ reservaActual.horaFin.slice(0,5) }}
+              </p>
             </div>
-            <button class="btn-outline-full">Marcar como Finalizada</button>
+            <button class="btn-outline-full"
+              (click)="cambiarEstado(reservaActual, 'finalizada')">
+              Marcar como Finalizada
+            </button>
           </div>
 
-          <!-- Notas Pre-Sesión -->
-          <div class="ctx-card notes-card">
+          <ng-template #sinSesion>
+            <div class="ctx-card session-card">
+              <div class="session-bg-ic">
+                <span class="material-symbols-outlined">spa</span>
+              </div>
+              <h3 class="ctx-title">Sesión Actual</h3>
+              <div class="empty-state">
+                <span class="material-symbols-outlined">event_available</span>
+                <p>Sin sesión en curso</p>
+              </div>
+            </div>
+          </ng-template>
+
+          <!-- Próximas citas -->
+          <div class="ctx-card">
             <div class="ctx-card-header">
-              <span class="ctx-label">Notas Pre-Sesión</span>
-              <span class="material-symbols-outlined">edit_note</span>
+              <span class="ctx-label">Próximas Citas Hoy</span>
+              <span class="material-symbols-outlined">schedule</span>
             </div>
-            <ul class="notes-list">
-              <li class="note-item note-done">
-                <span class="material-symbols-outlined note-ic">check_circle</span>
-                <p class="note-text">{{ proximaCita.nota }}</p>
-              </li>
-              <li class="note-item" *ngFor="let r of resenas">
-                <span class="material-symbols-outlined note-ic">radio_button_unchecked</span>
-                <p class="note-text">{{ r.texto }}</p>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Estado de Salas -->
-          <div class="ctx-card rooms-card">
-            <span class="ctx-label">Estado de Salas</span>
-            <div class="rooms-grid">
-              <div
-                class="room-item"
-                *ngFor="let d of disponibilidad"
-                [ngClass]="d.clase">
-                <span class="room-label">{{ d.dia }}</span>
-                <div class="room-status">
-                  <span class="room-dot"></span>
-                  <span class="room-slots">{{ d.slots }}</span>
+            <div class="proximas-lista">
+              <ng-container *ngFor="let r of reservasHoy">
+                <div class="proxima-item"
+                  *ngIf="r.estado === 'pendiente' || r.estado === 'confirmada'">
+                  <span class="proxima-hora">{{ r.horaInicio.slice(0,5) }}</span>
+                  <div class="proxima-info">
+                    <p class="proxima-cliente">{{ r.nombreCliente }}</p>
+                    <p class="proxima-servicio">{{ r.nombresServicios?.join(', ') }}</p>
+                  </div>
                 </div>
+              </ng-container>
+              <div class="empty-state"
+                *ngIf="reservasHoy.filter(r => r.estado === 'pendiente' || r.estado === 'confirmada').length === 0">
+                <p>Sin citas pendientes</p>
               </div>
             </div>
           </div>
@@ -203,14 +213,10 @@
     </div>
   </main>
 
-  <!-- FOOTER -->
   <footer class="esp-footer">
     <p class="footer-copy">© 2024 SpaApp Systems</p>
     <div class="footer-links">
-      <a href="#" class="footer-link">Soporte</a>
-      <a href="#" class="footer-link">Protocolos</a>
-      <a href="#" class="footer-link">Privacidad</a>
+      <a class="footer-link" [routerLink]="['/dashboard/configuracion']">Configuración</a>
     </div>
   </footer>
-
 </div>

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { Navbar } from '../../../components/navbar/navbar';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 interface Usuario {
@@ -29,7 +30,7 @@ interface Toast {
 @Component({
   selector: 'app-usuariosadmi',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Navbar],
   templateUrl: './Usuariosadmi.html',
   styleUrls: ['./Usuariosadmi.css']
 })
@@ -90,30 +91,30 @@ export class Usuariosadmi implements OnInit {
   }
 
   get clientesFiltrados(): Usuario[] {
-    let lista = this.mostrarInactivos
-      ? this.clientes
-      : this.clientes.filter(u => u.estado === 'activo');
-    if (!this.busqueda.trim()) return lista;
-    const q = this.busqueda.toLowerCase();
-    return lista.filter(c =>
-      c.nombre.toLowerCase().includes(q) ||
-      c.correo.toLowerCase().includes(q) ||
-      c.id.toString().includes(q)
-    );
-  }
+  let lista = this.mostrarInactivos
+    ? this.clientes.filter(u => u.estado === 'inactivo')
+    : this.clientes.filter(u => u.estado === 'activo');
+  if (!this.busqueda.trim()) return lista;
+  const q = this.busqueda.toLowerCase();
+  return lista.filter(c =>
+    c.nombre.toLowerCase().includes(q) ||
+    c.correo.toLowerCase().includes(q) ||
+    c.id.toString().includes(q)
+  );
+}
 
-  get especialistasFiltrados(): Usuario[] {
-    let lista = this.mostrarInactivos
-      ? this.especialistas
-      : this.especialistas.filter(u => u.estado === 'activo');
-    if (!this.busqueda.trim()) return lista;
-    const q = this.busqueda.toLowerCase();
-    return lista.filter(e =>
-      e.nombre.toLowerCase().includes(q) ||
-      e.correo.toLowerCase().includes(q) ||
-      e.id.toString().includes(q)
-    );
-  }
+get especialistasFiltrados(): Usuario[] {
+  let lista = this.mostrarInactivos
+    ? this.especialistas.filter(u => u.estado === 'inactivo')
+    : this.especialistas.filter(u => u.estado === 'activo');
+  if (!this.busqueda.trim()) return lista;
+  const q = this.busqueda.toLowerCase();
+  return lista.filter(e =>
+    e.nombre.toLowerCase().includes(q) ||
+    e.correo.toLowerCase().includes(q) ||
+    e.id.toString().includes(q)
+  );
+}
 
   cerrarSesion(): void {
     localStorage.clear();

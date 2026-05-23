@@ -1,41 +1,9 @@
-<!-- pages/admin/Agenda/Agendaadmi.html -->
 <div class="ag-shell">
 
-  <!-- ===== NAVBAR SpaApp ===== -->
-  <header class="ag-header">
-    <div class="header-left">
-      <span class="brand-name">SpaApp</span>
-      <div class="search-box">
-        <span class="material-symbols-outlined search-icon">search</span>
-        <input type="text" placeholder="Buscar..." class="search-input" />
-      </div>
-    </div>
+  <app-navbar paginaActiva="agenda"></app-navbar>
 
-    <nav class="main-nav">
-      <a class="nav-link" [routerLink]="['/admin/inicio']">Dashboard</a>
-      <a class="nav-link active">Agenda</a>
-      <a class="nav-link" [routerLink]="['/admin/servicios']">Servicios</a>
-      <a class="nav-link" [routerLink]="['/admin/clientes']">Clientes</a>
-      <a class="nav-link" [routerLink]="['/admin/finanzas']">Finanzas</a>
-      <a class="nav-link" [routerLink]="['/admin/configuracion']">Configuración</a>
-    </nav>
-
-    <div class="header-right">
-      <button class="notif-btn" aria-label="Notificaciones">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="notif-dot"></span>
-      </button>
-      <button class="btn-nueva-reserva">Nueva Reserva</button>
-      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
-      <span class="material-symbols-outlined user-icon-btn">account_circle</span>
-      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
-    </div>
-  </header>
-
-  <!-- ===== MAIN CANVAS ===== -->
   <main class="ag-main">
 
-    <!-- LEFT PANEL: Pulse -->
     <aside class="ag-aside">
 
       <div class="pulse-card">
@@ -43,7 +11,6 @@
           <span class="pulse-eyebrow">Status Actual</span>
           <h2 class="pulse-title">Pulse</h2>
         </div>
-
         <div class="pulse-stat">
           <div>
             <p class="pulse-label">Citas de Hoy</p>
@@ -53,33 +20,50 @@
             <div class="pulse-mini-fill"></div>
           </div>
         </div>
-
         <div class="pulse-stat">
           <div>
-            <p class="pulse-label">Ingresos Estimados</p>
-            <p class="pulse-value">{{ pulse.ingresos }}</p>
+            <p class="pulse-label">Citas esta Semana</p>
+            <p class="pulse-value">{{ pulse.citasSemana }}</p>
           </div>
-          <span class="material-symbols-outlined pulse-trend">trending_up</span>
+          <span class="material-symbols-outlined pulse-trend">calendar_month</span>
         </div>
-
-        <div class="pulse-alert">
-          <p class="pulse-alert-label">
-            <span class="material-symbols-outlined">warning</span>
-            Sin Asignar
-          </p>
-          <p class="pulse-alert-value">
-            {{ pulse.sinAsignar }}
-            <span class="pulse-alert-sub">pacientes</span>
-          </p>
+        <div class="pulse-stat">
+          <div>
+            <p class="pulse-label">Ingresos Semana</p>
+            <p class="pulse-value" style="font-size:1.4rem">{{ pulse.ingresosSemana }}</p>
+          </div>
+          <span class="material-symbols-outlined pulse-trend">attach_money</span>
         </div>
       </div>
 
-      <!-- Lounge image card -->
+      <div class="filtros-card">
+        <p class="filtros-titulo">Filtros</p>
+        <div class="filtro-group">
+          <label class="filtro-label">Terapeuta</label>
+          <select class="filtro-select" [(ngModel)]="filtroTerapeuta" (ngModelChange)="onFiltroChange()">
+            <option [value]="0">Todos</option>
+            <option *ngFor="let t of terapeutas" [value]="t.id">{{ t.nombre }}</option>
+          </select>
+        </div>
+        <div class="filtro-group">
+          <label class="filtro-label">Estado</label>
+          <select class="filtro-select" [(ngModel)]="filtroEstado" (ngModelChange)="onFiltroChange()">
+            <option value="">Todos</option>
+            <option *ngFor="let e of estadosDisponibles" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="leyenda-terapeutas" *ngIf="terapeutas.length > 0">
+          <p class="filtro-label" style="margin-bottom:0.5rem">Colores</p>
+          <div class="leyenda-item" *ngFor="let t of terapeutas">
+            <span class="leyenda-dot" [style.background]="getColorTerapeuta(t.id)"></span>
+            <span class="leyenda-nombre">{{ t.nombre }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="lounge-card">
-        <img
-          src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=600&q=70"
-          alt="Lounge Oriente"
-          class="lounge-img" />
+        <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=600&q=70"
+          alt="Lounge" class="lounge-img" />
         <div class="lounge-overlay"></div>
         <div class="lounge-content">
           <span class="lounge-eyebrow">Espacio Destacado</span>
@@ -89,109 +73,221 @@
 
     </aside>
 
-    <!-- RIGHT PANEL: Agenda -->
     <div class="ag-content">
 
-      <!-- Agenda Controls -->
       <div class="agenda-controls">
         <div class="controls-left">
           <h2 class="agenda-title">Agenda Semanal</h2>
-          <div class="view-toggle">
-            <button class="toggle-btn toggle-btn--active">Semana</button>
-            <button class="toggle-btn">Día</button>
-          </div>
         </div>
         <div class="controls-right">
-          <button class="nav-arrow">
+          <button class="nav-arrow" (click)="semanaAnterior()">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
           <span class="week-label">{{ semanaLabel }}</span>
-          <button class="nav-arrow">
+          <button class="nav-arrow" (click)="semanaSiguiente()">
             <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>
 
-      <!-- Weekly Grid -->
-      <div class="weekly-grid">
-        <div class="therapist-col" *ngFor="let ter of terapeutas; let i = index"
-          [class.therapist-col--alt]="i % 2 !== 0">
+      <div class="gcal-wrapper">
 
-          <!-- Therapist header -->
-          <div class="col-header">
-            <p class="ter-nombre">{{ ter.nombre }}</p>
-            <p class="ter-rol">{{ ter.rol }}</p>
+        <div class="gcal-header">
+          <div class="gcal-corner"></div>
+          <div class="gcal-day-header"
+            *ngFor="let dia of diasSemana"
+            [class.gcal-day-header--hoy]="esHoy(dia)">
+            <span class="gcal-day-nombre">{{ ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'][dia.getDay()] }}</span>
+            <span class="gcal-day-num" [class.gcal-day-num--hoy]="esHoy(dia)">{{ dia.getDate() }}</span>
+            <span class="gcal-day-count" *ngIf="contarCitasDia(dia) > 0">
+              {{ contarCitasDia(dia) }} cita{{ contarCitasDia(dia) > 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="gcal-body">
+
+          <div class="gcal-horas">
+            <div class="gcal-hora-cell" *ngFor="let h of horasCalendario">
+              {{ h }}:00
+            </div>
           </div>
 
-          <!-- Appointments -->
-          <div class="col-body">
-            <ng-container *ngFor="let cita of ter.citas">
+          <div class="gcal-dias">
+            <div class="gcal-dia-col"
+              *ngFor="let dia of diasSemana"
+              [class.gcal-dia-col--hoy]="esHoy(dia)">
 
-              <!-- Free / Break slot -->
-              <div class="slot-free" *ngIf="cita.tipo === 'libre'">
-                {{ cita.label || 'Libre' }}
+              <div class="gcal-linea-hora"
+                *ngFor="let h of horasCalendario"
+                (click)="clickSlotVacio(dia, h)">
               </div>
 
-              <!-- Appointment block -->
-              <div class="slot-appt"
-                *ngIf="cita.tipo === 'cita'"
-                [class.slot-appt--gold]="cita.color === 'gold'"
-                [class.slot-appt--dim]="cita.color === 'dim'">
-                <p class="slot-hora">{{ cita.hora }}</p>
-                <p class="slot-servicio">{{ cita.servicio }}</p>
-                <p class="slot-cliente">{{ cita.cliente }}</p>
+              <div class="gcal-linea-actual"
+                *ngIf="esHoy(dia) && esSemanaActual()"
+                [style.top.px]="getLineaHoraActual()">
+                <div class="gcal-linea-actual-dot"></div>
               </div>
 
-            </ng-container>
+              <div *ngFor="let r of getReservasDia(dia)"
+                class="gcal-evento"
+                [style.top.px]="getTop(r.horaInicio)"
+                [style.height.px]="getAltura(r.horaInicio, r.horaFin)"
+                [style.background]="getColorFondo(r.idTerapeuta)"
+                [style.border-left]="'3px solid ' + getColorTerapeuta(r.idTerapeuta)"
+                [class.gcal-evento--cancelada]="r.estado === 'cancelada'"
+                (mouseenter)="mostrarTooltip($event, r)"
+                (mouseleave)="ocultarTooltip()"
+                (click)="abrirEditModal(r, $event)">
+                <span class="gcal-evento-hora">{{ r.horaInicio.slice(0,5) }}</span>
+                <span class="gcal-evento-cliente">{{ r.nombreCliente }}</span>
+                <span class="gcal-evento-servicio">{{ r.nombresServicios?.[0] }}</span>
+              </div>
+
+            </div>
           </div>
 
         </div>
       </div>
 
-      <!-- Bottom Stats -->
-      <div class="bottom-stats">
+    </div>
+  </main>
+</div>
 
-        <!-- Donut occupancy -->
-        <div class="occ-card">
-          <div class="donut-wrap">
-            <svg class="donut-svg" viewBox="0 0 36 36">
-              <path class="donut-bg"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none" stroke-dasharray="100,100" stroke-width="3" />
-              <path class="donut-ring"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none" stroke-dasharray="78,100" stroke-linecap="round" stroke-width="3" />
-            </svg>
-            <div class="donut-label">78%</div>
-          </div>
-          <div class="occ-info">
-            <span class="occ-eyebrow">Ocupación Semanal</span>
-            <h4 class="occ-title">Eficiencia de Cabinas</h4>
-            <p class="occ-desc">Actualmente operando con alta demanda en rituales húmedos y tratamientos de autor.</p>
-          </div>
+<!-- TOOLTIP -->
+<div class="gcal-tooltip"
+  *ngIf="tooltipReserva"
+  [style.left.px]="tooltipX"
+  [style.top.px]="tooltipY">
+  <p class="tooltip-cliente">{{ tooltipReserva.nombreCliente }}</p>
+  <p class="tooltip-servicio">{{ tooltipReserva.nombresServicios?.join(', ') }}</p>
+  <p class="tooltip-terapeuta">{{ tooltipReserva.nombreTerapeuta }}</p>
+  <p class="tooltip-hora">{{ tooltipReserva.horaInicio.slice(0,5) }} - {{ tooltipReserva.horaFin.slice(0,5) }}</p>
+  <p class="tooltip-estado" [class]="'tooltip-estado--' + tooltipReserva.estado">{{ tooltipReserva.estado }}</p>
+  <p class="tooltip-total">${{ tooltipReserva.totalServicios | number }}</p>
+</div>
+
+<!-- MODAL EDITAR RESERVA -->
+<div class="modal-backdrop" [class.open]="showEditModal" (click)="cerrarEditModal()">
+  <div class="modal-edit" (click)="$event.stopPropagation()">
+
+    <div class="modal-edit__header">
+      <div>
+        <span class="modal-edit__eyebrow">Reserva #{{ reservaEditando?.idReserva }}</span>
+        <h2 class="modal-edit__title">
+          {{ esTerapeuta ? 'Ver Reserva' : 'Editar Reserva' }}
+        </h2>
+      </div>
+      <button class="modal-edit__close" (click)="cerrarEditModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-edit__body" *ngIf="reservaEditando">
+      <div class="edit-info">
+        <p class="edit-info__label">Cliente</p>
+        <p class="edit-info__value">{{ reservaEditando.nombreCliente }}</p>
+      </div>
+      <div class="edit-info">
+        <p class="edit-info__label">Servicios actuales</p>
+        <p class="edit-info__value">{{ reservaEditando.nombresServicios?.join(', ') }}</p>
+      </div>
+      <div class="edit-info">
+        <p class="edit-info__label">Terapeuta</p>
+        <p class="edit-info__value">{{ reservaEditando.nombreTerapeuta }}</p>
+      </div>
+      <div class="edit-info">
+        <p class="edit-info__label">Hora</p>
+        <p class="edit-info__value">{{ reservaEditando.horaInicio.slice(0,5) }} — {{ reservaEditando.horaFin.slice(0,5) }}</p>
+      </div>
+
+      <!-- Solo admin/recepcionista pueden cambiar fecha y hora -->
+      <div class="edit-grid" *ngIf="!esTerapeuta">
+        <div class="edit-field">
+          <label class="edit-label">Fecha</label>
+          <input class="edit-input" type="date" [(ngModel)]="editForm.fecha" />
         </div>
-
-        <!-- Specialty distribution -->
-        <div class="dist-card">
-          <div class="dist-header">
-            <h4 class="dist-title">Distribución por Especialidad</h4>
-            <span class="material-symbols-outlined dist-more">more_horiz</span>
-          </div>
-          <div class="dist-bars">
-            <div class="dist-bar-item" *ngFor="let d of distribucion">
-              <div class="dist-bar-top">
-                <span class="dist-bar-label">{{ d.label }}</span>
-                <span class="dist-bar-pct">{{ d.pct }}%</span>
-              </div>
-              <div class="dist-track">
-                <div class="dist-fill" [style.width.%]="d.pct"></div>
-              </div>
-            </div>
-          </div>
+        <div class="edit-field">
+          <label class="edit-label">Hora inicio</label>
+          <input class="edit-input" type="time" [(ngModel)]="editForm.horaInicio" />
         </div>
+      </div>
 
+      <!-- Todos pueden cambiar estado -->
+      <div class="edit-grid">
+        <div class="edit-field" style="grid-column: span 2">
+          <label class="edit-label">Estado</label>
+          <select class="edit-input" [(ngModel)]="editForm.estado">
+            <option *ngFor="let e of estadosDisponibles" [value]="e">{{ e }}</option>
+          </select>
+        </div>
       </div>
     </div>
 
-  </main>
+    <div class="modal-edit__footer">
+      <button class="btn-ghost" (click)="cerrarEditModal()">Cancelar</button>
+      <!-- Solo admin/recepcionista pueden editar servicios -->
+      <button class="btn-ghost"
+        style="border-color: rgba(227,193,144,0.3); color: #e3c190;"
+        *ngIf="!esTerapeuta"
+        (click)="abrirEditServicios($event)">
+        <span class="material-symbols-outlined" style="font-size:14px">edit</span>
+        Editar Servicios
+      </button>
+      <button class="btn-primary" (click)="guardarCambios()" [disabled]="isSubmitting">
+        <span class="material-symbols-outlined">save</span>
+        {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL EDITAR SERVICIOS -->
+<div class="modal-backdrop" [class.open]="showEditServiciosModal" (click)="cerrarEditServicios()">
+  <div class="modal-edit" style="max-width: 560px" (click)="$event.stopPropagation()">
+
+    <div class="modal-edit__header">
+      <div>
+        <span class="modal-edit__eyebrow">Reserva #{{ reservaEditando?.idReserva }}</span>
+        <h2 class="modal-edit__title">Editar Servicios</h2>
+      </div>
+      <button class="modal-edit__close" (click)="cerrarEditServicios()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-edit__body">
+      <p style="font-size:0.82rem; color: rgba(229,226,225,0.6); margin:0 0 1rem">
+        Selecciona los servicios para esta reserva:
+      </p>
+      <div class="servicios-grid-edit">
+        <div class="servicio-edit-item"
+          *ngFor="let s of todosServicios"
+          [class.servicio-edit-item--activo]="estaSeleccionado(s.idServicio)"
+          (click)="toggleServicio(s.idServicio)">
+          <div class="servicio-edit-check">
+            <span class="material-symbols-outlined">
+              {{ estaSeleccionado(s.idServicio) ? 'check_box' : 'check_box_outline_blank' }}
+            </span>
+          </div>
+          <div class="servicio-edit-info">
+            <p class="servicio-edit-nombre">{{ s.nombre }}</p>
+            <p class="servicio-edit-meta">{{ s.duracionMinutos }} min · ${{ s.precio | number }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-edit__footer">
+      <button class="btn-ghost" (click)="cerrarEditServicios()">Cancelar</button>
+      <button class="btn-primary"
+        [disabled]="serviciosSeleccionados.length === 0 || isSubmittingServicios"
+        (click)="guardarServicios()">
+        <span class="material-symbols-outlined">save</span>
+        {{ isSubmittingServicios ? 'Guardando...' : 'Guardar Servicios' }}
+      </button>
+    </div>
+
+  </div>
 </div>

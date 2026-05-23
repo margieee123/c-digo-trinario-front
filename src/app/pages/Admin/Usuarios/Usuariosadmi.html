@@ -1,26 +1,6 @@
 <div class="cli-shell">
 
-  <header class="cli-header">
-    <div class="header-left">
-      <span class="brand-name">SpaApp</span>
-    </div>
-    <nav class="main-nav">
-      <a class="nav-link" [routerLink]="['/dashboard/admin']">Inicio</a>
-      <a class="nav-link" [routerLink]="['/dashboard/admin/agenda']">Agenda</a>
-      <a class="nav-link" [routerLink]="['/dashboard/admin/servicios']">Servicios</a>
-      <a class="nav-link active">Usuarios</a>
-      <a class="nav-link">Facturación</a>
-      <a class="nav-link">Configuración</a>
-    </nav>
-    <div class="header-right">
-      <button class="notif-btn" aria-label="Notificaciones">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="notif-dot"></span>
-      </button>
-      <div class="user-initial-circle">{{ nombre.charAt(0).toUpperCase() }}</div>
-      <button class="btn-cerrar" (click)="cerrarSesion()">Cerrar sesión</button>
-    </div>
-  </header>
+ <app-navbar paginaActiva="usuarios"></app-navbar>
 
   <main class="cli-main">
 
