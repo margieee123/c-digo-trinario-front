@@ -17,6 +17,7 @@ interface Tema {
   nombre: string;
   descripcion: string;
   bg: string;
+  
   surface: string;
   gold: string;
   text: string;

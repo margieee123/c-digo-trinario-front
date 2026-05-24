@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Navbar } from '../../../components/navbar/navbar';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from 'environments/environment';
 
 interface Usuario {
   id: number;
@@ -36,7 +37,7 @@ interface Toast {
 })
 export class Usuariosadmi implements OnInit {
 
-  private apiUrl = 'http://localhost:8080/usuarios';
+  private apiUrl = environment.apiUrl + '/usuarios';
   nombre: string = '';
   tabActivo: string = 'clientes';
   busqueda: string = '';

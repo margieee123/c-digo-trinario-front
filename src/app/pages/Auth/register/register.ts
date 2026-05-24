@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AlertComponent } from '../../../components/alert/alert';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -20,8 +21,7 @@ export class RegisterComponent {
   confirmPassword: string = '';
   isLoading: boolean = false;
   errorMessage: string = '';
-
-  private apiUrl = 'http://localhost:8080/auth/register';
+private apiUrl = environment.apiUrl + '/auth/register';
 
   constructor(private http: HttpClient, private router: Router) {}
 

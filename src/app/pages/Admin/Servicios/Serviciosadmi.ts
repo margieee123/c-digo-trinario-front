@@ -4,6 +4,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Navbar } from '../../../components/navbar/navbar';
+import { environment } from 'environments/environment';
+
+
 
 interface Servicio {
   idServicio: number;
@@ -39,7 +42,7 @@ interface ServicioForm {
 })
 export class Serviciosadmi implements OnInit {
 
-  private apiUrl = 'http://localhost:8080/servicios';
+  private apiUrl = environment.apiUrl + '/servicios';
   readonly placeholder = 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=80';
 
   services: Servicio[] = [];
