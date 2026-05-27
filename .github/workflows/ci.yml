@@ -23,8 +23,10 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Instalar Angular CLI
-        run: npm install -g @angular/cli
+      - name: Instalar Angular CLI y coverage
+        run: |
+          npm install -g @angular/cli
+          npm install --save-dev @vitest/coverage-v8
 
       - name: Ejecutar tests
         run: ng test --watch=false --coverage
