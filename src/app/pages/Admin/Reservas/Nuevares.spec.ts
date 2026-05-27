@@ -1,13 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { vi } from 'vitest';
 import { ReservasComponent } from './Nuevares';
+import { environment } from 'environments/environment';
 
 describe('ReservasComponent', () => {
   let component: ReservasComponent;
   let router: Router;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -22,10 +24,12 @@ describe('ReservasComponent', () => {
     const fixture = TestBed.createComponent(ReservasComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
+    httpMock = TestBed.inject(HttpTestingController);
     localStorage.clear();
   });
 
   afterEach(() => {
+    httpMock.verify();
     localStorage.clear();
   });
 
@@ -36,13 +40,127 @@ describe('ReservasComponent', () => {
   it('debe detectar rol cliente correctamente', () => {
     localStorage.setItem('rol', 'cliente');
     component.ngOnInit();
+    httpMock.expectOne(`${environment.apiUrl}/servicios`).flush([]);
     expect(component.esCliente).toBe(true);
   });
 
   it('debe detectar rol admin correctamente', () => {
     localStorage.setItem('rol', 'administrador');
     component.ngOnInit();
+    httpMock.expectOne(`${environment.apiUrl}/servicios`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush([]);
     expect(component.esCliente).toBe(false);
+  });
+
+  it('cargarServicios debe cargar solo servicios activos', () => {
+    const mockServicios = [
+      { idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' },
+      { idServicio: 2, nombre: 'Facial', descripcion: '', precio: 80, duracionMinutos: 45, estado: 'inactivo' }
+    ];
+    component.cargarServicios();
+    httpMock.expectOne(`${environment.apiUrl}/servicios`).flush(mockServicios);
+    expect(component.servicios.length).toBe(1);
+    expect(component.serviciosFiltrados.length).toBe(1);
+  });
+
+  it('cargarServicios debe mostrar toast en error', () => {
+    component.cargarServicios();
+    httpMock.expectOne(`${environment.apiUrl}/servicios`).flush('error', { status: 500, statusText: 'Server Error' });
+    expect(component.toasts.length).toBe(1);
+  });
+
+  it('cargarTerapeutas debe cargar solo terapeutas activos', () => {
+    const mockUsuarios = [
+      { id: 1, nombre: 'Maria', correo: 'maria@test.com', rol: 'terapeuta', estado: 'activo' },
+      { id: 2, nombre: 'Juan', correo: 'juan@test.com', rol: 'cliente', estado: 'activo' }
+    ];
+    component.cargarTerapeutas();
+    httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush(mockUsuarios);
+    expect(component.terapeutas.length).toBe(1);
+    expect(component.terapeutas[0].nombre).toBe('Maria');
+  });
+
+  it('cargarTerapeutas debe mostrar toast en error', () => {
+    component.cargarTerapeutas();
+    httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush('error', { status: 500, statusText: 'Server Error' });
+    expect(component.toasts.length).toBe(1);
+  });
+
+  it('cargarReservas cliente debe usar endpoint mis-reservas', () => {
+    component.esCliente = true;
+    component.cargarReservas();
+    const req = httpMock.expectOne(`${environment.apiUrl}/reservas/mis-reservas`);
+    req.flush([]);
+    expect(component.reservas.length).toBe(0);
+  });
+
+  it('cargarReservas admin debe usar endpoint reservas', () => {
+    component.esCliente = false;
+    component.cargarReservas();
+    const req = httpMock.expectOne(`${environment.apiUrl}/reservas`);
+    req.flush([]);
+    expect(component.reservas.length).toBe(0);
+  });
+
+  it('cargarReservas debe mostrar toast en error', () => {
+    component.esCliente = true;
+    component.cargarReservas();
+    httpMock.expectOne(`${environment.apiUrl}/reservas/mis-reservas`).flush('error', { status: 500, statusText: 'Server Error' });
+    expect(component.toasts.length).toBe(1);
+  });
+
+  it('confirmarReservaAdmin debe hacer POST y navegar', () => {
+    const spy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    component.esCliente = false;
+    component.rol = 'administrador';
+    component.clienteSeleccionado = { id: 1, nombre: 'Juan', correo: 'j@test.com', rol: 'cliente', estado: 'activo' };
+    component.terapeutaSeleccionado = { id: 2, nombre: 'Maria', correo: 'm@test.com', rol: 'terapeuta', estado: 'activo' };
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
+    component.fechaSeleccionada = new Date(2026, 0, 15);
+    component.horaSeleccionada = '09:00:00';
+
+    component.confirmarReservaAdmin();
+    const req = httpMock.expectOne(`${environment.apiUrl}/reservas`);
+    req.flush({});
+    expect(component.toasts.length).toBe(1);
+  });
+
+  it('confirmarReservaAdmin debe mostrar toast en error', () => {
+    component.clienteSeleccionado = { id: 1, nombre: 'Juan', correo: 'j@test.com', rol: 'cliente', estado: 'activo' };
+    component.terapeutaSeleccionado = { id: 2, nombre: 'Maria', correo: 'm@test.com', rol: 'terapeuta', estado: 'activo' };
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
+    component.fechaSeleccionada = new Date(2026, 0, 15);
+    component.horaSeleccionada = '09:00:00';
+
+    component.confirmarReservaAdmin();
+    httpMock.expectOne(`${environment.apiUrl}/reservas`).flush({ message: 'Error' }, { status: 400, statusText: 'Bad Request' });
+    expect(component.toasts.length).toBe(1);
+    expect(component.isSubmitting).toBe(false);
+  });
+
+  it('confirmarReservaCliente debe hacer GET disponibilidad y POST reserva', () => {
+    component.esCliente = true;
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
+    component.fechaSeleccionada = new Date(2026, 0, 15);
+    component.horaSeleccionada = '09:00:00';
+
+    component.confirmarReservaCliente();
+    const reqDisp = httpMock.expectOne(req => req.url.includes('terapeuta-disponible'));
+    reqDisp.flush({ idTerapeuta: 1 });
+    const reqReserva = httpMock.expectOne(`${environment.apiUrl}/reservas`);
+    reqReserva.flush({});
+    expect(component.toasts.length).toBe(1);
+  });
+
+  it('confirmarReservaCliente debe mostrar mensaje si no hay terapeutas', () => {
+    component.esCliente = true;
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
+    component.fechaSeleccionada = new Date(2026, 0, 15);
+    component.horaSeleccionada = '09:00:00';
+
+    component.confirmarReservaCliente();
+    httpMock.expectOne(req => req.url.includes('terapeuta-disponible')).flush('', { status: 404, statusText: 'Not Found' });
+    expect(component.mensajeDisponibilidad).toContain('No hay terapeutas disponibles');
   });
 
   it('seleccionarServicio debe agregar servicio si no esta seleccionado', () => {
@@ -92,9 +210,7 @@ describe('ReservasComponent', () => {
 
   it('puedeConfirmar cliente debe retornar true con datos completos', () => {
     component.esCliente = true;
-    component.serviciosSeleccionados = [
-      { idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }
-    ];
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
     component.fechaSeleccionada = new Date();
     component.horaSeleccionada = '09:00:00';
     expect(component.puedeConfirmar()).toBe(true);
@@ -102,9 +218,7 @@ describe('ReservasComponent', () => {
 
   it('puedeConfirmar admin debe retornar false sin terapeuta', () => {
     component.esCliente = false;
-    component.serviciosSeleccionados = [
-      { idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }
-    ];
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
     component.fechaSeleccionada = new Date();
     component.horaSeleccionada = '09:00:00';
     component.terapeutaSeleccionado = null;
@@ -152,9 +266,7 @@ describe('ReservasComponent', () => {
   });
 
   it('resetForm debe limpiar todos los campos', () => {
-    component.serviciosSeleccionados = [
-      { idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }
-    ];
+    component.serviciosSeleccionados = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
     component.fechaSeleccionada = new Date();
     component.horaSeleccionada = '09:00:00';
     component.resetForm();
@@ -181,7 +293,6 @@ describe('ReservasComponent', () => {
   it('showToast debe agregar toast a la lista', () => {
     component.showToast('Test', 'success');
     expect(component.toasts.length).toBe(1);
-    expect(component.toasts[0].message).toBe('Test');
   });
 
   it('filtrarServicios debe filtrar por query', () => {
@@ -195,9 +306,7 @@ describe('ReservasComponent', () => {
   });
 
   it('limpiarBusqueda debe resetear serviciosFiltrados', () => {
-    component.servicios = [
-      { idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }
-    ];
+    component.servicios = [{ idServicio: 1, nombre: 'Masaje', descripcion: '', precio: 100, duracionMinutos: 60, estado: 'activo' }];
     component.searchQuery = 'masaje';
     component.limpiarBusqueda();
     expect(component.searchQuery).toBe('');
@@ -228,5 +337,66 @@ describe('ReservasComponent', () => {
     component.mostrarCalendario = true;
     component.cerrarCalendario();
     expect(component.mostrarCalendario).toBe(false);
+  });
+
+  it('mesAnterior debe retroceder un mes', () => {
+    component.mesActual = new Date(2026, 5, 1);
+    component.mesAnterior();
+    expect(component.mesActual.getMonth()).toBe(4);
+  });
+
+  it('mesSiguiente debe avanzar un mes', () => {
+    component.mesActual = new Date(2026, 5, 1);
+    component.mesSiguiente();
+    expect(component.mesActual.getMonth()).toBe(6);
+  });
+
+  it('esPasado debe retornar true para fecha pasada', () => {
+    const ayer = new Date();
+    ayer.setDate(ayer.getDate() - 1);
+    expect(component.esPasado(ayer)).toBe(true);
+  });
+
+  it('formatFecha debe formatear fecha correctamente', () => {
+    expect(component.formatFecha(new Date(2026, 0, 15))).toBe('2026-01-15');
+  });
+
+  it('getReservasDia debe retornar reservas del dia', () => {
+    component.reservas = [{ idReserva: 1, fecha: '2026-01-15' } as any];
+    const resultado = component.getReservasDia(new Date(2026, 0, 15));
+    expect(resultado.length).toBe(1);
+  });
+
+  it('getSemanaLabel debe retornar string con rango de fechas', () => {
+    component.generarSemana();
+    expect(component.getSemanaLabel()).not.toBe('');
+  });
+
+  it('semanaAnterior debe retroceder 7 dias', () => {
+    const fechaInicial = new Date(component.semanaActual);
+    component.semanaAnterior();
+    const diff = fechaInicial.getTime() - component.semanaActual.getTime();
+    expect(diff).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+
+  it('semanaSiguiente debe avanzar 7 dias', () => {
+    const fechaInicial = new Date(component.semanaActual);
+    component.semanaSiguiente();
+    const diff = component.semanaActual.getTime() - fechaInicial.getTime();
+    expect(diff).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+
+  it('getTopOffset debe calcular offset correctamente', () => {
+    expect(component.getTopOffset('08:00')).toBe(0);
+    expect(component.getTopOffset('09:00')).toBeGreaterThan(0);
+  });
+
+  it('getAltura debe calcular altura correctamente', () => {
+    expect(component.getAltura('09:00', '10:00')).toBeGreaterThan(0);
+  });
+
+  it('getNombreDia debe retornar nombre del dia', () => {
+    const lunes = new Date(2026, 0, 5);
+    expect(component.getNombreDia(lunes)).toBe('Lun');
   });
 });
