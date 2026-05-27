@@ -371,3 +371,33 @@
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1024px) { .cfg-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .cfg-main { padding: 1.5rem 1rem 3rem; } }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+
+  /* Grid en columna */
+  .cfg-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .cfg-main { padding: 1.5rem 1rem 5rem; }
+
+  /* Cards más compactas */
+  .cfg-card__body { padding: 1.25rem; }
+  .cfg-card__header { padding: 1rem 1.25rem; }
+
+  /* Botones full width */
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    justify-content: center;
+    align-self: stretch;
+  }
+
+  /* Temas más compactos */
+  .tema-preview { width: 36px; height: 28px; }
+  .tema-nombre { font-size: 0.75rem; }
+
+  /* Toasts */
+  .toast-container { bottom: 5rem; right: 1rem; left: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 1.5rem; }
+  .perfil-avatar { width: 52px; height: 52px; font-size: 1.2rem; }
+}

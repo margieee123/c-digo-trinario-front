@@ -119,3 +119,22 @@
   color: #c9a86a;
   text-decoration: none;
 }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+  .container { flex-direction: column; }
+  .hero { width: 100%; height: 200px; }
+  .overlay { bottom: 1rem; left: 1rem; }
+  .overlay h1 { font-size: 1.5rem; }
+  .form-container {
+    width: 100%;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+  }
+  .row { flex-direction: column; gap: 0; }
+}
+
+@media (max-width: 480px) {
+  .hero { height: 150px; }
+  .form-container { padding: 1.5rem 1rem; }
+  .header h3 { font-size: 1.5rem; }
+}

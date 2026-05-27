@@ -363,3 +363,21 @@
     font-size: 3rem;
   }
 }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+  .main-shell {
+    padding: 2rem 1rem;
+    max-width: 100%;
+  }
+  .login-card { padding: 1.5rem; border-radius: 1rem; }
+  .brand-title { font-size: 2rem; }
+  .utility-links { gap: 1rem; }
+  .floating-box { display: none; }
+}
+
+@media (max-width: 480px) {
+  .main-shell { padding: 1.5rem 0.75rem; }
+  .brand-title { font-size: 1.75rem; }
+  .login-card { padding: 1.25rem; }
+  .form { gap: 1.5rem; }
+}

@@ -232,3 +232,31 @@ img { display: block; max-width: 100%; }
 .italic         { font-style: italic; }
 .tracking-wide  { letter-spacing: 0.12rem; }
 .tracking-wider { letter-spacing: 0.2rem; }
+/* ─── MOBILE BOTTOM NAV PADDING GLOBAL ─── */
+@media (max-width: 1024px) {
+  /* Asegura que el contenido no quede tapado por la barra inferior */
+  .sanctuary-dashboard,
+  .reservas-layout,
+  .ag-shell,
+  .fac-shell,
+  .admin-shell,
+  .cli-shell,
+  .cfg-shell,
+  .esp-shell,
+  .recep-shell,
+  .main {
+    padding-bottom: 72px;
+  }
+
+  /* Para los page-wrapper y main-content internos */
+  .page-wrapper,
+  .main-content,
+  .fac-main,
+  .page-wrapper,
+  .cli-main,
+  .cfg-main,
+  .recep-main,
+  .ag-main {
+    padding-bottom: 80px !important;
+  }
+}

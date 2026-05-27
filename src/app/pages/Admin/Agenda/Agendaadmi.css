@@ -827,3 +827,64 @@
     padding: 16px;
   }
 }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+
+  /* Layout en columna */
+  .ag-main {
+    grid-template-columns: 1fr;
+    padding: 1rem 1rem 6rem;
+    gap: 1rem;
+  }
+
+  /* Aside horizontal en móvil */
+  .ag-aside { flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+  .pulse-card, .filtros-card { flex: 1; min-width: 280px; }
+  .lounge-card { display: none; }
+
+  /* Controles de agenda */
+  .agenda-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .controls-right { width: 100%; justify-content: space-between; }
+
+  /* Calendario - 3 días en móvil */
+  .gcal-header {
+    grid-template-columns: 40px repeat(3, 1fr);
+  }
+  .gcal-day-header:nth-child(n+5) { display: none; }
+  .gcal-dias { grid-template-columns: repeat(3, 1fr); }
+  .gcal-dia-col:nth-child(n+4) { display: none; }
+  .gcal-body { grid-template-columns: 40px 1fr; }
+  .gcal-hora-cell { font-size: 0.5rem; padding: 4px 4px 0 0; }
+
+  /* Modal full screen */
+  .modal-edit {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-edit__body { flex: 1; overflow-y: auto; }
+  .edit-grid { grid-template-columns: 1fr; }
+
+  /* Footer modal */
+  .modal-edit__footer { flex-wrap: wrap; }
+  .modal-edit__footer > button { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  /* Solo 1 día en pantallas muy pequeñas */
+  .gcal-header { grid-template-columns: 36px 1fr; }
+  .gcal-day-header:nth-child(n+3) { display: none; }
+  .gcal-dias { grid-template-columns: 1fr; }
+  .gcal-dia-col:nth-child(n+2) { display: none; }
+
+  .pulse-value { font-size: 1.5rem; }
+  .agenda-title { font-size: 1.1rem; }
+}

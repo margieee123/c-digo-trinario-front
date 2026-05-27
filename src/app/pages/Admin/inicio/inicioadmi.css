@@ -754,3 +754,50 @@
   .promo-content { padding: 0 1.5rem; }
   .promo-title { font-size: 1.2rem; }
 }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+
+  /* Title row en columna */
+  .page-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .page-title-row .btn-primary { width: 100%; justify-content: center; }
+
+  /* Métricas 2 columnas */
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .metric-value { font-size: 1.5rem; }
+
+  /* Content grid en columna */
+  .content-grid { grid-template-columns: 1fr; }
+  .col-side { order: -1; }
+
+  /* Cards más compactas */
+  .card { padding: 1.25rem; }
+  .catalog-card { padding: 1.25rem; }
+
+  /* Tabla - ocultar columnas */
+  .pro-table th:nth-child(3),
+  .pro-table td:nth-child(3),
+  .pro-table th:nth-child(4),
+  .pro-table td:nth-child(4) { display: none; }
+
+  /* Bar chart más pequeño */
+  .bar-chart { height: 120px; }
+  .bar-label { font-size: 0.5rem; }
+
+  /* Promo banner */
+  .promo-content { padding: 0 1.25rem; max-width: 100%; }
+  .promo-title { font-size: 1.2rem; }
+  .promo-banner { height: 200px; }
+
+  /* Logs */
+  .log-desc { white-space: normal; }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid { grid-template-columns: 1fr; }
+  .page-title { font-size: 1.4rem; }
+  .card { padding: 1rem; }
+}

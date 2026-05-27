@@ -424,3 +424,39 @@
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .main-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .recep-main { padding: 1.5rem 1rem 3rem; } .kpi-grid { grid-template-columns: 1fr 1fr; } .accesos-rapidos { flex-direction: column; } }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+
+  /* KPIs 2 columnas */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .kpi-value { font-size: 1.4rem; }
+  .kpi-card { padding: 1rem; gap: 0.75rem; }
+
+  /* Accesos rápidos en columna */
+  .accesos-rapidos { flex-direction: column; }
+  .acceso-btn { width: 100%; justify-content: center; }
+
+  /* Main grid en columna */
+  .main-grid { grid-template-columns: 1fr; }
+  .right-col { order: -1; }
+
+  /* Cards */
+  .card { padding: 1rem; }
+  .card-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+
+  /* Filtros tabs */
+  .filtros-tabs { overflow-x: auto; width: 100%; }
+
+  /* Citas */
+  .cita-item { flex-wrap: wrap; gap: 0.5rem; }
+  .cita-acciones { width: 100%; justify-content: flex-end; }
+
+  /* Welcome */
+  .welcome-title { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .welcome-title { font-size: 1.3rem; }
+  .recep-main { padding: 1rem 0.75rem 5rem; }
+}

@@ -922,3 +922,77 @@
   margin-bottom: 0.5rem;
 }
 .disponibilidad-msg .material-symbols-outlined { font-size: 18px; flex-shrink: 0; }
+/* ─── RESPONSIVE MÓVIL ADICIONAL ─── */
+@media (max-width: 768px) {
+
+  /* Layout principal en móvil */
+  .reservas-layout {
+    padding: 1.5rem 1rem 6rem;
+    gap: 1.5rem;
+  }
+
+  /* Título más pequeño */
+  .reservas-titulo { font-size: 2rem; }
+
+  /* Header con botón de calendario abajo */
+  .header-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .btn-ver-calendario { width: 100%; justify-content: center; }
+
+  /* Grid de servicios una columna */
+  .servicios-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Cards más compactas */
+  .card-body { padding: 1rem; }
+  .card-titulo { font-size: 1.1rem; }
+
+  /* Sidebar full width y sin sticky */
+  .reservas-sidebar { width: 100%; }
+  .sidebar-panel {
+    position: static;
+    max-height: none;
+    padding: 1.25rem;
+  }
+
+  /* Fechas grid en móvil */
+  .fechas-grid { grid-template-columns: repeat(3, 1fr); }
+
+  /* Horas grid más compacto */
+  .horas-grid { grid-template-columns: repeat(4, 1fr); }
+
+  /* Modal calendario full screen */
+  .cal-modal {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  /* Toasts abajo al centro */
+  .toast-container {
+    bottom: 5rem;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  /* Botón confirmar más grande para touch */
+  .btn-confirmar { padding: 1rem; font-size: 0.75rem; }
+
+  /* Totales más compactos */
+  .sidebar-totales { padding: 1rem; }
+  .total-monto { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .reservas-titulo { font-size: 1.75rem; }
+  .fechas-grid { grid-template-columns: repeat(2, 1fr); }
+  .horas-grid { grid-template-columns: repeat(3, 1fr); }
+  .sidebar-titulo { font-size: 1.25rem; }
+}
