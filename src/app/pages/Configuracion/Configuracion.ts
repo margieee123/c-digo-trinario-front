@@ -17,7 +17,6 @@ interface Tema {
   nombre: string;
   descripcion: string;
   bg: string;
-  
   surface: string;
   gold: string;
   text: string;
@@ -116,13 +115,15 @@ export class ConfiguracionComponent implements OnInit {
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-  this.nombre = localStorage.getItem('nombre') || '';
-  this.correo = localStorage.getItem('correo') || '';
-  this.rol = localStorage.getItem('rol') || '';
-  this.temaActual = localStorage.getItem('tema') || 'obsidiana';
-  this.cargarInfoSpa();
-  this.aplicarTema(this.temaActual);
-}
+    this.nombre = localStorage.getItem('nombre') || '';
+    this.correo = localStorage.getItem('correo') || '';
+    this.rol = localStorage.getItem('rol') || '';
+    const claveTema = `tema_${this.correo}`;
+    this.temaActual = localStorage.getItem(claveTema) || 'obsidiana';
+    this.cargarInfoSpa();
+    this.aplicarTema(this.temaActual);
+  }
+
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
@@ -131,33 +132,33 @@ export class ConfiguracionComponent implements OnInit {
   // ─── Info Spa ─────────────────────────────────────────────────
 
   cargarInfoSpa(): void {
-  this.http.get<any>(`${this.apiUrl}/configuracion-spa`,
-    { headers: this.getHeaders() }
-  ).subscribe({
-    next: (data) => {
-      this.infoSpa = data;
-      this.cdr.detectChanges();
-    },
-    error: () => {
-      const saved = localStorage.getItem('infoSpa');
-      if (saved) this.infoSpa = JSON.parse(saved);
-    }
-  });
-}
+    this.http.get<any>(`${this.apiUrl}/configuracion-spa`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (data) => {
+        this.infoSpa = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        const saved = localStorage.getItem('infoSpa');
+        if (saved) this.infoSpa = JSON.parse(saved);
+      }
+    });
+  }
 
-guardarInfoSpa(): void {
-  this.http.put(
-    `${this.apiUrl}/configuracion-spa`,
-    this.infoSpa,
-    { headers: this.getHeaders() }
-  ).subscribe({
-    next: () => {
-      localStorage.setItem('infoSpa', JSON.stringify(this.infoSpa));
-      this.showToast('Información del spa guardada', 'success');
-    },
-    error: () => this.showToast('Error al guardar información', 'error')
-  });
-}
+  guardarInfoSpa(): void {
+    this.http.put(
+      `${this.apiUrl}/configuracion-spa`,
+      this.infoSpa,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: () => {
+        localStorage.setItem('infoSpa', JSON.stringify(this.infoSpa));
+        this.showToast('Información del spa guardada', 'success');
+      },
+      error: () => this.showToast('Error al guardar información', 'error')
+    });
+  }
 
   // ─── Cambiar contraseña ───────────────────────────────────────
 
@@ -229,21 +230,23 @@ guardarInfoSpa(): void {
 
   seleccionarTema(id: string): void {
     this.temaActual = id;
-    localStorage.setItem('tema', id);
+    const claveTema = `tema_${this.correo}`;
+    localStorage.setItem(claveTema, id);
     this.aplicarTema(id);
     this.showToast('Tema aplicado', 'success');
   }
 
   aplicarTema(id: string): void {
-  document.body.className = document.body.className
-    .split(' ')
-    .filter(c => !c.startsWith('tema-'))
-    .join(' ');
-  if (id !== 'obsidiana') {
-    document.body.classList.add(`tema-${id}`);
+    document.body.className = document.body.className
+      .split(' ')
+      .filter(c => !c.startsWith('tema-'))
+      .join(' ');
+    if (id !== 'obsidiana') {
+      document.body.classList.add(`tema-${id}`);
+    }
+    const claveTema = `tema_${this.correo}`;
+    localStorage.setItem(claveTema, id);
   }
-  localStorage.setItem('tema', id);
-}
 
   // ─── Toasts ───────────────────────────────────────────────────
 

@@ -41,13 +41,26 @@ export class Login {
       password: this.password
     }).subscribe({
       next: (response) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('rol', response.rol);
-        localStorage.setItem('nombre', response.nombre);
-        localStorage.setItem('idUsuario', response.idUsuario);
-        this.isLoading = false;
-        this.redirigirSegunRol(response.rol);
-      },
+  localStorage.setItem('token', response.token);
+  localStorage.setItem('rol', response.rol);
+  localStorage.setItem('nombre', response.nombre);
+  localStorage.setItem('idUsuario', response.idUsuario);
+  localStorage.setItem('correo', this.correo);
+
+  // Aplicar tema del usuario
+  const claveTema = `tema_${this.correo}`;
+  const tema = localStorage.getItem(claveTema) || 'obsidiana';
+  document.body.className = document.body.className
+    .split(' ')
+    .filter(c => !c.startsWith('tema-'))
+    .join(' ');
+  if (tema !== 'obsidiana') {
+    document.body.classList.add(`tema-${tema}`);
+  }
+
+  this.isLoading = false;
+  this.redirigirSegunRol(response.rol);
+},
       error: (err) => {
         this.isLoading = false;
         console.log('err completo:', err);
