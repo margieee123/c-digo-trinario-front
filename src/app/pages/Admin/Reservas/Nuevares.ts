@@ -309,6 +309,15 @@ export class ReservasComponent implements OnInit {
     return this.horasOcupadas.includes(hora);
   }
 
+  clickHora(h: string): void {
+  if (this.estaOcupada(h)) {
+    this.mensajeDisponibilidad = 'No hay terapeutas disponibles en este horario. Elige otra hora.';
+  } else {
+    this.horaSeleccionada = h;
+    this.mensajeDisponibilidad = '';
+  }
+}
+
   esFechaSeleccionada(dia: Date | null): boolean {
     if (!dia || !this.fechaSeleccionada) return false;
     return dia.toDateString() === this.fechaSeleccionada.toDateString();
