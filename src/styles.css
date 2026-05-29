@@ -261,50 +261,62 @@ img { display: block; max-width: 100%; }
   }
 }
 /* ─── CALENDARIO SCROLL HORIZONTAL GLOBAL MÓVIL ─── */
+
 @media (max-width: 768px) {
-  .gcal-grid-wrap,
+
+  /* Agenda admin/recep/terapeuta */
   .gcal-wrapper {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
-
-  .gcal-dias-header,
-  .gcal-header {
+  .gcal-wrapper .gcal-header {
     grid-template-columns: 40px repeat(7, 120px) !important;
     min-width: 880px !important;
   }
-
-  .gcal-grid,
-  .gcal-dias {
+  .gcal-wrapper .gcal-body {
+    min-width: 880px !important;
+    overflow-x: visible !important;
+  }
+  .gcal-wrapper .gcal-dias {
     grid-template-columns: repeat(7, 120px) !important;
-    min-width: 840px !important;
   }
+  .gcal-wrapper .gcal-day-header { display: flex !important; }
+  .gcal-wrapper .gcal-dia-col { display: block !important; }
 
-  .gcal-dia-label,
-  .gcal-day-header,
-  .gcal-slot,
-  .gcal-dia-col {
-    display: flex !important;
+  /* Calendario cliente — header de días */
+  .gcal-grid-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
+  .gcal-grid-wrap .gcal-dias-header {
+    grid-template-columns: 40px repeat(7, 120px) !important;
+    min-width: 880px !important;
+  }
+  .gcal-grid-wrap .gcal-dia-label { display: flex !important; }
+
+  /* Calendario cliente — grid de slots (8 columnas: 1 hora + 7 días) */
+  .gcal-grid-wrap .gcal-grid {
+    grid-template-columns: 40px repeat(7, 120px) !important;
+    min-width: 880px !important;
+  }
+  .gcal-grid-wrap .gcal-slot { display: block !important; }
+  .gcal-grid-wrap .gcal-hora-label { display: flex !important; }
 }
 
 @media (max-width: 480px) {
-  .gcal-dias-header,
-  .gcal-header {
+  .gcal-wrapper .gcal-header {
     grid-template-columns: 36px repeat(7, 100px) !important;
     min-width: 736px !important;
   }
+  .gcal-wrapper .gcal-body { min-width: 736px !important; }
+  .gcal-wrapper .gcal-dias { grid-template-columns: repeat(7, 100px) !important; }
 
-  .gcal-grid,
-  .gcal-dias {
-    grid-template-columns: repeat(7, 100px) !important;
-    min-width: 700px !important;
+  .gcal-grid-wrap .gcal-dias-header {
+    grid-template-columns: 36px repeat(7, 100px) !important;
+    min-width: 736px !important;
   }
-
-  .gcal-dia-label,
-  .gcal-day-header,
-  .gcal-slot,
-  .gcal-dia-col {
-    display: flex !important;
+  .gcal-grid-wrap .gcal-grid {
+    grid-template-columns: 36px repeat(7, 100px) !important;
+    min-width: 736px !important;
   }
 }
