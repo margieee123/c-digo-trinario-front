@@ -78,9 +78,11 @@ export class ReservasComponent implements OnInit {
   buscandoCliente: boolean = false;
   private busquedaTimeout: any = null;
 
-  // ── Disponibilidad (solo cliente)
+  // ── Disponibilidad
   verificandoDisponibilidad: boolean = false;
   mensajeDisponibilidad: string = '';
+  horasOcupadas: string[] = [];
+  cargandoDisponibilidad: boolean = false;
 
   // ── Calendario mini
   hoy = new Date();
@@ -133,7 +135,6 @@ export class ReservasComponent implements OnInit {
       this.cargarTerapeutas();
     }
 
-    // Leer queryParams para preseleccionar fecha y hora
     this.route.queryParams.subscribe(params => {
       if (params['fecha']) {
         const partes = params['fecha'].split('-');
@@ -186,6 +187,10 @@ export class ReservasComponent implements OnInit {
       this.serviciosSeleccionados = [...this.serviciosSeleccionados, s];
     }
     this.mensajeDisponibilidad = '';
+    // Si ya hay fecha seleccionada, recalcular disponibilidad con nueva duración
+    if (this.esCliente && this.fechaSeleccionada) {
+      this.verificarDisponibilidadDia(this.fechaSeleccionada);
+    }
   }
 
   estaSeleccionado(s: ServicioBackend): boolean {
@@ -271,6 +276,37 @@ export class ReservasComponent implements OnInit {
     if (!dia || dia < this.hoy) return;
     this.fechaSeleccionada = dia;
     this.mensajeDisponibilidad = '';
+    this.horaSeleccionada = '';
+    this.horasOcupadas = [];
+    if (this.esCliente) {
+      this.verificarDisponibilidadDia(dia);
+    }
+  }
+
+  verificarDisponibilidadDia(dia: Date): void {
+    this.cargandoDisponibilidad = true;
+    const fecha = this.formatFecha(dia);
+    const duracion = this.duracionTotal > 0 ? this.duracionTotal : 60;
+
+    this.http.get<any>(
+      `${this.apiUrl}/reservas/disponibilidad-semana?fechaInicio=${fecha}&fechaFin=${fecha}&duracionMinutos=${duracion}`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (data) => {
+        this.horasOcupadas = Object.entries(data.slots)
+          .filter(([_, disponible]) => !disponible)
+          .map(([slot]) => (slot as string).split('T')[1] + ':00');
+        this.cargandoDisponibilidad = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoDisponibilidad = false;
+      }
+    });
+  }
+
+  estaOcupada(hora: string): boolean {
+    return this.horasOcupadas.includes(hora);
   }
 
   esFechaSeleccionada(dia: Date | null): boolean {
@@ -421,6 +457,7 @@ export class ReservasComponent implements OnInit {
     this.usarHoraManual = false;
     this.searchQuery = '';
     this.mensajeDisponibilidad = '';
+    this.horasOcupadas = [];
     this.filtrarServicios();
   }
 

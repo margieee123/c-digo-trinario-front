@@ -15,7 +15,7 @@
     <div class="page-header">
       <span class="page-eyebrow">Panel de Control</span>
       <h1 class="page-title">Configuración</h1>
-      <p class="page-subtitle">Personaliza tu experiencia en Spa Manager</p>
+      <p class="page-subtitle">Personaliza tu experiencia en el centro de bienestar</p>
     </div>
 
     <div class="cfg-grid">
@@ -93,9 +93,10 @@
       <div class="cfg-col">
 
         <!-- CAMBIAR CONTRASEÑA -->
-        <div class="cfg-card">
-          <div class="cfg-card__header">
-            <span class="material-symbols-outlined cfg-card__icon">lock</span>
+        <!-- RECUPERAR CONTRASEÑA -->
+          <div class="cfg-card" *ngIf="rol === 'administrador'">
+            <div class="cfg-card__header">
+              <span class="material-symbols-outlined cfg-card__icon">key</span>
             <div>
               <h2 class="cfg-card__title">Cambiar Contraseña</h2>
               <p class="cfg-card__subtitle">Actualiza tu contraseña de acceso</p>

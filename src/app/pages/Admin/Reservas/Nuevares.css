@@ -996,3 +996,21 @@
   .horas-grid { grid-template-columns: repeat(3, 1fr); }
   .sidebar-titulo { font-size: 1.25rem; }
 }
+.hora-btn--ocupada {
+  background: rgba(255, 100, 100, 0.08);
+  border-color: rgba(255, 100, 100, 0.2);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.hora-btn--ocupada:hover {
+  background: rgba(255, 100, 100, 0.15);
+  border-color: rgba(255, 100, 100, 0.4);
+  color: var(--err);
+  opacity: 1;
+}

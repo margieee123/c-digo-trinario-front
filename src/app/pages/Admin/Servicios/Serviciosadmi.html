@@ -3,10 +3,10 @@
 
   <div class="page-header">
     <div class="page-header__meta">
-      <span class="page-header__eyebrow">Catálogo de Lujo</span>
+      <span class="page-header__eyebrow">Catálogo de Servicios</span>
       <h1 class="page-header__title">Gestión de Servicios</h1>
       <p class="page-header__subtitle">
-        Defina y organice el catálogo de experiencias de lujo de su santuario.
+        Defina y organice el catálogo de servicios de su centro de bienestar.
       </p>
     </div>
     <button class="btn-primary" (click)="openAddModal()">
@@ -19,7 +19,7 @@
   <div class="filter-bar">
     <div class="navbar__search">
       <span class="material-symbols-outlined">search</span>
-      <input type="text" placeholder="Buscar por nombre o descripción…" [(ngModel)]="busqueda" />
+      <input type="text" placeholder="Buscar…" [(ngModel)]="busqueda" />
     </div>
     <label class="toggle-inactivos">
       <input type="checkbox" [(ngModel)]="mostrarInactivos" />
@@ -148,7 +148,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Precio (USD)</label>
+          <label class="form-label">Precio (COP)</label>
           <div class="form-input-icon-wrap">
             <span class="form-input-icon material-symbols-outlined">attach_money</span>
             <input class="form-input" type="number" placeholder="0.00" min="0" step="0.01" [(ngModel)]="form.precio" />

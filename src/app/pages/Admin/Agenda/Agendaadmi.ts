@@ -81,6 +81,7 @@ export class Agendaadmi implements OnInit {
 
   // Pulse
   pulse = { citasHoy: 0, ingresosSemana: '$0', citasSemana: 0 };
+  servicioMasReservado: string = '';
 
   // Modal editar reserva
   showEditModal = false;
@@ -215,6 +216,24 @@ export class Agendaadmi implements OnInit {
       .filter(r => r.estado !== 'cancelada')
       .reduce((sum, r) => sum + (r.totalServicios || 0), 0);
     this.pulse.ingresosSemana = '$' + ingresos.toLocaleString();
+    this.calcularServicioMasReservado();
+  }
+
+  calcularServicioMasReservado(): void {
+    const conteo: Record<string, number> = {};
+    this.todasReservas
+      .filter(r => r.estado !== 'cancelada')
+      .forEach(r => {
+        r.nombresServicios?.forEach(s => {
+          conteo[s] = (conteo[s] || 0) + 1;
+        });
+      });
+    const entries = Object.entries(conteo);
+    if (entries.length === 0) {
+      this.servicioMasReservado = 'Sin datos';
+      return;
+    }
+    this.servicioMasReservado = entries.reduce((a, b) => b[1] > a[1] ? b : a)[0];
   }
 
   getReservasDia(dia: Date): Reserva[] {
@@ -286,8 +305,6 @@ export class Agendaadmi implements OnInit {
     this.tooltipReserva = null;
   }
 
-  // ─── Modal editar reserva ─────────────────────────────────────
-
   abrirEditModal(reserva: Reserva, event: MouseEvent): void {
     event.stopPropagation();
     this.reservaEditando = reserva;
@@ -323,8 +340,6 @@ export class Agendaadmi implements OnInit {
       error: () => { this.isSubmitting = false; }
     });
   }
-
-  // ─── Modal editar servicios ───────────────────────────────────
 
   abrirEditServicios(event: MouseEvent): void {
     event.stopPropagation();

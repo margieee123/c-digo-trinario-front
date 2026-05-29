@@ -7,7 +7,7 @@
     <div class="welcome-section">
       <span class="eyebrow">{{ fechaHoy }} · {{ horaActual }}</span>
       <h1 class="welcome-title">Bienvenida, <em>{{ nombre }}</em></h1>
-      <p class="welcome-sub">Panel de Recepción</p>
+      <p class="welcome-sub">Gestiona las citas, reservas y atención al cliente del centro de bienestar</p>
     </div>
 
     <!-- KPIs -->
@@ -95,18 +95,21 @@
               </span>
               <button class="btn-confirmar"
                 *ngIf="r.estado === 'pendiente'"
+                [disabled]="procesandoReserva === r.idReserva"
                 (click)="cambiarEstado(r, 'confirmada')">
-                Confirmar
+                {{ procesandoReserva === r.idReserva ? 'Procesando...' : 'Confirmar' }}
               </button>
               <button class="btn-proceso"
                 *ngIf="r.estado === 'confirmada'"
+                [disabled]="procesandoReserva === r.idReserva"
                 (click)="cambiarEstado(r, 'en_proceso')">
-                Iniciar
+                {{ procesandoReserva === r.idReserva ? 'Procesando...' : 'Iniciar' }}
               </button>
               <button class="btn-finalizar"
                 *ngIf="r.estado === 'en_proceso'"
+                [disabled]="procesandoReserva === r.idReserva"
                 (click)="cambiarEstado(r, 'finalizada')">
-                Finalizar
+                {{ procesandoReserva === r.idReserva ? 'Procesando...' : 'Finalizar' }}
               </button>
             </div>
           </div>

@@ -43,6 +43,7 @@ export class IniciorecepComponent implements OnInit {
   nombre: string = '';
   fechaHoy: string = '';
   horaActual: string = '';
+  procesandoReserva: number | null = null;
 
   // Datos del backend
   reservasHoy: Reserva[] = [];
@@ -145,13 +146,20 @@ export class IniciorecepComponent implements OnInit {
   }
 
   cambiarEstado(reserva: Reserva, nuevoEstado: string): void {
+    this.procesandoReserva = reserva.idReserva;
     this.http.patch(
       `${this.apiUrl}/reservas/${reserva.idReserva}/estado?estado=${nuevoEstado}`,
       {},
       { headers: this.getHeaders() }
     ).subscribe({
-      next: () => this.cargarReservasHoy(),
-      error: () => console.error('Error al cambiar estado')
+      next: () => {
+        this.procesandoReserva = null;
+        this.cargarReservasHoy();
+      },
+      error: () => {
+        this.procesandoReserva = null;
+        console.error('Error al cambiar estado');
+      }
     });
   }
 

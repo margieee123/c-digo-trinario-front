@@ -169,29 +169,35 @@
 
       <!-- Hora -->
       <div class="sidebar-section">
-        <p class="sidebar-label">Hora</p>
-        <div class="horas-grid" *ngIf="!usarHoraManual">
-          <button
-            class="hora-btn"
-            *ngFor="let h of horas"
-            [class.activa]="horaSeleccionada === h"
-            (click)="horaSeleccionada = h; mensajeDisponibilidad = ''">
-            {{ h.slice(0,5) }}
-          </button>
-        </div>
-        <div class="hora-manual-wrapper">
-          <label class="hora-manual-toggle">
-            <input type="checkbox" [(ngModel)]="usarHoraManual" (change)="horaSeleccionada = ''" />
-            <span>Otra hora</span>
-          </label>
-          <input
-            *ngIf="usarHoraManual"
-            class="form-input"
-            type="time"
-            [(ngModel)]="horaManual"
-          />
-        </div>
-      </div>
+  <p class="sidebar-label">Hora</p>
+  <p class="sidebar-placeholder" *ngIf="cargandoDisponibilidad">
+    <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">hourglass_empty</span>
+    Verificando disponibilidad...
+  </p>
+  <div class="horas-grid" *ngIf="!usarHoraManual && !cargandoDisponibilidad">
+    <button
+      class="hora-btn"
+      *ngFor="let h of horas"
+      [class.activa]="horaSeleccionada === h"
+      [class.hora-btn--ocupada]="estaOcupada(h)"
+      (click)="estaOcupada(h) ? mensajeDisponibilidad = 'No hay terapeutas disponibles en este horario. Elige otra hora.' : (horaSeleccionada = h; mensajeDisponibilidad = '')">
+      {{ h.slice(0,5) }}
+      <span *ngIf="estaOcupada(h)" class="material-symbols-outlined" style="font-size:12px">block</span>
+    </button>
+  </div>
+  <div class="hora-manual-wrapper">
+    <label class="hora-manual-toggle">
+      <input type="checkbox" [(ngModel)]="usarHoraManual" (change)="horaSeleccionada = ''" />
+      <span>Otra hora</span>
+    </label>
+    <input
+      *ngIf="usarHoraManual"
+      class="form-input"
+      type="time"
+      [(ngModel)]="horaManual"
+    />
+  </div>
+</div>
 
       <!-- Mensaje disponibilidad (solo cliente) -->
       <div class="disponibilidad-msg" *ngIf="mensajeDisponibilidad">

@@ -6,16 +6,13 @@
     <div class="page-wrapper">
 
       <!-- PAGE TITLE -->
-      <div class="page-title-row">
-        <div>
-          <h1 class="page-title">Panel de Administración</h1>
-          <p class="page-subtitle">Bienvenido, {{ nombre }}</p>
-        </div>
-        <button class="btn-primary" (click)="irNuevaReserva()">
-          <span class="material-symbols-outlined">add</span>
-          Nueva Reserva
-        </button>
-      </div>
+      <<!-- PAGE TITLE -->
+<div class="page-title-row">
+  <div>
+    <h1 class="page-title">Panel de Administración</h1>
+    <p class="page-subtitle">Bienvenido, {{ nombre }}</p>
+  </div>
+</div>
 
       <!-- METRICS GRID -->
       <section class="metrics-grid">
@@ -50,11 +47,11 @@
             <div class="bar-chart">
               <div class="bar-col" *ngFor="let bar of barData">
                 <div class="bar-count" *ngIf="bar.count > 0">{{ bar.count }}</div>
-                <div
-                  class="bar"
-                  [style.height.%]="bar.height"
-                  [class.bar--peak]="bar.highlight">
-                </div>
+              <div
+                class="bar"
+                [style.height.px]="bar.height"
+                [class.bar--peak]="bar.highlight">
+              </div>
                 <div class="bar-label">{{ bar.label }}</div>
               </div>
             </div>

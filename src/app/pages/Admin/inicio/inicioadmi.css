@@ -255,12 +255,12 @@
 }
 
 .bar {
-  flex: 1;
   width: 100%;
   background-color: rgba(227,193,144,0.12);
   border-radius: 4px 4px 0 0;
   cursor: help;
-  transition: background-color var(--ease);
+  transition: background-color var(--ease), height 0.4s ease;
+  min-height: 4px;
 }
 
 .bar:hover { background-color: rgba(227,193,144,0.3); }

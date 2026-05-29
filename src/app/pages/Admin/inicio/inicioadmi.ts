@@ -238,32 +238,33 @@ export class InicioAdmi implements OnInit {
   }
 
   generarBarras(reservas: Reserva[]): void {
-    const diasNombres = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    const lunes = new Date();
-    const dia = lunes.getDay();
-    lunes.setDate(lunes.getDate() - (dia === 0 ? 6 : dia - 1));
-    lunes.setHours(0, 0, 0, 0);
+  const diasNombres = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const lunes = new Date();
+  const dia = lunes.getDay();
+  lunes.setDate(lunes.getDate() - (dia === 0 ? 6 : dia - 1));
+  lunes.setHours(0, 0, 0, 0);
 
-    const conteos = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(lunes);
-      d.setDate(lunes.getDate() + i);
-      const fechaStr = this.formatFecha(d);
-      return {
-        label: diasNombres[i],
-        count: reservas.filter(r => r.fecha === fechaStr && r.estado !== 'cancelada').length
-      };
-    });
+  const conteos = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + i);
+    const fechaStr = this.formatFecha(d);
+    return {
+      label: diasNombres[i],
+      count: reservas.filter(r => r.fecha === fechaStr && r.estado !== 'cancelada').length
+    };
+  });
 
-    const max = Math.max(...conteos.map(c => c.count), 1);
-    const maxCount = Math.max(...conteos.map(c => c.count));
+  const max = Math.max(...conteos.map(c => c.count), 1);
+  const maxCount = Math.max(...conteos.map(c => c.count));
+  const maxAlturaPx = 120; // altura máxima en px dentro del contenedor de 160px
 
-    this.barData = conteos.map(c => ({
-      height: Math.max((c.count / max) * 100, 5),
-      highlight: c.count === maxCount && maxCount > 0,
-      label: c.label,
-      count: c.count
-    }));
-  }
+  this.barData = conteos.map(c => ({
+    height: Math.max((c.count / max) * maxAlturaPx, c.count > 0 ? 8 : 4),
+    highlight: c.count === maxCount && maxCount > 0,
+    label: c.label,
+    count: c.count
+  }));
+}
 
   getDonaOffset(index: number): number {
     const total = this.estadosReservas.reduce((sum, e) => sum + e.count, 0);

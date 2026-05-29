@@ -853,3 +853,12 @@
   .team-grid { grid-template-columns: 1fr; }
   .page-title { font-size: 1.6rem; }
 }
+.search-hero {
+  background: var(--surface-low) !important;
+  border: 1px solid var(--border-gold);
+}
+
+.sh-input {
+  background: transparent !important;
+  color: var(--text) !important;
+}

@@ -8,8 +8,8 @@
 
       <div class="pulse-card">
         <div class="pulse-header">
-          <span class="pulse-eyebrow">Status Actual</span>
-          <h2 class="pulse-title">Pulse</h2>
+          <span class="pulse-eyebrow">Estado Actual</span>
+          <h2 class="pulse-title">Resumen</h2>
         </div>
         <div class="pulse-stat">
           <div>
@@ -33,6 +33,13 @@
             <p class="pulse-value" style="font-size:1.4rem">{{ pulse.ingresosSemana }}</p>
           </div>
           <span class="material-symbols-outlined pulse-trend">attach_money</span>
+        </div>
+        <div class="pulse-stat">
+          <div>
+            <p class="pulse-label">Servicio Más Reservado</p>
+            <p class="pulse-value" style="font-size:1rem">{{ servicioMasReservado }}</p>
+          </div>
+          <span class="material-symbols-outlined pulse-trend">star</span>
         </div>
       </div>
 
@@ -67,7 +74,7 @@
         <div class="lounge-overlay"></div>
         <div class="lounge-content">
           <span class="lounge-eyebrow">Espacio Destacado</span>
-          <h3 class="lounge-name">Lounge Oriente</h3>
+          <h3 class="lounge-name">Centro de Bienestar</h3>
         </div>
       </div>
 
@@ -201,7 +208,6 @@
         <p class="edit-info__value">{{ reservaEditando.horaInicio.slice(0,5) }} — {{ reservaEditando.horaFin.slice(0,5) }}</p>
       </div>
 
-      <!-- Solo admin/recepcionista pueden cambiar fecha y hora -->
       <div class="edit-grid" *ngIf="!esTerapeuta">
         <div class="edit-field">
           <label class="edit-label">Fecha</label>
@@ -213,7 +219,6 @@
         </div>
       </div>
 
-      <!-- Todos pueden cambiar estado -->
       <div class="edit-grid">
         <div class="edit-field" style="grid-column: span 2">
           <label class="edit-label">Estado</label>
@@ -226,7 +231,6 @@
 
     <div class="modal-edit__footer">
       <button class="btn-ghost" (click)="cerrarEditModal()">Cancelar</button>
-      <!-- Solo admin/recepcionista pueden editar servicios -->
       <button class="btn-ghost"
         style="border-color: rgba(227,193,144,0.3); color: #e3c190;"
         *ngIf="!esTerapeuta"
