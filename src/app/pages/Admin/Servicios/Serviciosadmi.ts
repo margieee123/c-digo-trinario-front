@@ -241,7 +241,7 @@ export class Serviciosadmi implements OnInit {
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
     const icons = { success: 'check_circle', error: 'error', info: 'info' };
-    const toast: Toast = { id: Math.random().toString(36).slice(2), message, type, icon: icons[type] };
+    const toast: Toast = { id: crypto.randomUUID(), message, type, icon: icons[type] };
     this.toasts.push(toast);
     setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== toast.id); }, 3000);
   }

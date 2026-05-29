@@ -439,7 +439,7 @@ export class InicioclienteComponent implements OnInit {
   // ─── Toasts ───────────────────────────────────────────────
 
   showToast(message: string, type: string): void {
-    const toast = { id: Math.random().toString(36).slice(2), message, type };
+    const toast = { id: crypto.randomUUID(), message, type };
     this.toasts.push(toast);
     setTimeout(() => {
       this.toasts = this.toasts.filter(t => t.id !== toast.id);

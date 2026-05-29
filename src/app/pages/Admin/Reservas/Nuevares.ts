@@ -556,7 +556,7 @@ export class ReservasComponent implements OnInit {
   // ─── Toasts ───────────────────────────────────────────────────
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-    const toast: Toast = { id: Math.random().toString(36).slice(2), message, type };
+    const toast: Toast = { id: crypto.randomUUID(), message, type };
     this.toasts.push(toast);
     setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== toast.id); }, 3000);
   }

@@ -211,7 +211,7 @@ get especialistasFiltrados(): Usuario[] {
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
     const icons = { success: 'check_circle', error: 'error', info: 'info' };
-    const t: Toast = { id: Math.random().toString(36).slice(2), message, type, icon: icons[type] };
+    const t: Toast = { id: crypto.randomUUID(), message, type, icon: icons[type] };
     this.toasts.push(t);
     setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 3000);
   }

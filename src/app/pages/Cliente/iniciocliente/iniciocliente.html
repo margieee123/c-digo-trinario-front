@@ -361,7 +361,7 @@
     <div class="modal-edit__body" *ngIf="reservaEditando">
       <div class="edit-info">
         <p class="edit-info__label">Servicios actuales</p>
-        <p class="edit-info__value">{{ reservaEditando.nombresServicios.join(', ') }}</p>
+<p class="edit-info__value">{{ reservaEditando?.nombresServicios?.join(', ') }}</p>
       </div>
       <div class="edit-info">
         <p class="edit-info__label">Terapeuta asignado</p>
