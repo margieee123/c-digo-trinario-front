@@ -92,11 +92,10 @@
       <!-- COLUMNA DERECHA -->
       <div class="cfg-col">
 
-        <!-- CAMBIAR CONTRASEÑA -->
-        <!-- RECUPERAR CONTRASEÑA -->
-          <div class="cfg-card" *ngIf="rol === 'administrador'">
-            <div class="cfg-card__header">
-              <span class="material-symbols-outlined cfg-card__icon">key</span>
+        <!-- CAMBIAR CONTRASEÑA — visible para todos -->
+        <div class="cfg-card">
+          <div class="cfg-card__header">
+            <span class="material-symbols-outlined cfg-card__icon">lock</span>
             <div>
               <h2 class="cfg-card__title">Cambiar Contraseña</h2>
               <p class="cfg-card__subtitle">Actualiza tu contraseña de acceso</p>
@@ -155,21 +154,21 @@
           </div>
         </div>
 
-        <!-- RECUPERAR CONTRASEÑA -->
-        <div class="cfg-card">
+        <!-- RECUPERAR CONTRASEÑA — solo admin -->
+        <div class="cfg-card" *ngIf="rol === 'administrador'">
           <div class="cfg-card__header">
             <span class="material-symbols-outlined cfg-card__icon">key</span>
             <div>
-              <h2 class="cfg-card__title">Recuperar Contraseña</h2>
-              <p class="cfg-card__subtitle">Envía una contraseña temporal por correo</p>
+              <h2 class="cfg-card__title">Enviar Contraseña Temporal</h2>
+              <p class="cfg-card__subtitle">Resetea la contraseña de cualquier usuario</p>
             </div>
           </div>
           <div class="cfg-card__body">
             <p class="cfg-desc">
-              Ingresa el correo registrado y recibirás una contraseña temporal para acceder.
+              Ingresa el correo del usuario y le llegará una contraseña temporal para que pueda acceder.
             </p>
             <div class="form-field">
-              <label class="form-label">Correo Electrónico</label>
+              <label class="form-label">Correo del Usuario</label>
               <input
                 class="form-input"
                 type="email"
@@ -183,19 +182,19 @@
           </div>
         </div>
 
-        <!-- INFO SPA (solo admin) -->
+        <!-- INFO SPA — solo admin -->
         <div class="cfg-card" *ngIf="rol === 'administrador'">
           <div class="cfg-card__header">
             <span class="material-symbols-outlined cfg-card__icon">store</span>
             <div>
-              <h2 class="cfg-card__title">Información del Spa</h2>
-              <p class="cfg-card__subtitle">Datos generales del negocio</p>
+              <h2 class="cfg-card__title">Información del Centro</h2>
+              <p class="cfg-card__subtitle">Datos generales del centro de bienestar</p>
             </div>
           </div>
           <div class="cfg-card__body">
             <div class="form-field">
-              <label class="form-label">Nombre del Spa</label>
-              <input class="form-input" type="text" [(ngModel)]="infoSpa.nombre" placeholder="Nombre del spa" />
+              <label class="form-label">Nombre del Centro</label>
+              <input class="form-input" type="text" [(ngModel)]="infoSpa.nombre" placeholder="Nombre del centro" />
             </div>
             <div class="form-field">
               <label class="form-label">Dirección</label>
@@ -207,7 +206,7 @@
             </div>
             <div class="form-field">
               <label class="form-label">Email de contacto</label>
-              <input class="form-input" type="email" [(ngModel)]="infoSpa.email" placeholder="email@spa.com" />
+              <input class="form-input" type="email" [(ngModel)]="infoSpa.email" placeholder="email@centro.com" />
             </div>
             <button class="btn-primary" (click)="guardarInfoSpa()">
               <span class="material-symbols-outlined">save</span>

@@ -732,15 +732,26 @@
 /* ─── RESPONSIVE MÓVIL ─── */
 @media (max-width: 768px) {
 
-  /* Calendario - mostrar solo 3 días en móvil */
+  /* Calendario con scroll horizontal */
+  .gcal-grid-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .gcal-dias-header {
-    grid-template-columns: 40px repeat(3, 1fr);
+    grid-template-columns: 40px repeat(7, 120px);
+    min-width: 880px;
   }
+
   .gcal-grid {
-    grid-template-columns: 40px repeat(3, 1fr);
+    grid-template-columns: 40px repeat(7, 120px);
+    min-width: 880px;
   }
-  .gcal-dia-label:nth-child(n+5) { display: none; }
-  .gcal-slot:nth-child(3n+1) ~ .gcal-slot:nth-child(n+5) { display: none; }
+
+  /* Mostrar todos los días */
+  .gcal-dia-label { display: flex !important; }
+  .gcal-slot { display: block !important; }
+
   .gcal-hora-label { font-size: 0.5rem; padding: 0 4px; }
 
   /* Cards más compactas */
@@ -749,77 +760,40 @@
   .card-title { font-size: 1.2rem; }
 
   /* Historial en móvil */
-  .history-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-  .history-right {
-    align-items: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+  .history-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .history-right { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 0.5rem; }
 
-  /* Modales full screen en móvil */
+  /* Modales full screen */
   .modal, .modal--wide, .modal-edit {
-    width: 100vw;
-    max-width: 100vw;
-    height: 100dvh;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
+    width: 100vw; max-width: 100vw;
+    height: 100dvh; border-radius: 0;
+    display: flex; flex-direction: column;
   }
-  .modal__body, .modal-edit__body {
-    flex: 1;
-    max-height: none;
-  }
+  .modal__body, .modal-edit__body { flex: 1; max-height: none; }
 
-  /* Detalle grid en móvil - una columna */
   .detalle-grid { grid-template-columns: 1fr; }
   .detalle-section--full { grid-column: span 1; }
-
-  /* Edit grid en móvil - una columna */
   .edit-grid { grid-template-columns: 1fr; }
 
-  /* Botones de acción más grandes para touch */
   .btn-primary, .btn-ghost, .btn-danger, .btn-outline {
-    padding: 0.85rem 1.25rem;
-    font-size: 0.72rem;
+    padding: 0.85rem 1.25rem; font-size: 0.72rem;
   }
 
-  /* Footer del modal en móvil */
-  .modal__footer, .modal-edit__footer {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .modal__footer > button, .modal-edit__footer > button {
-    flex: 1;
-    justify-content: center;
-  }
+  .modal__footer, .modal-edit__footer { flex-wrap: wrap; gap: 0.5rem; }
+  .modal__footer > button, .modal-edit__footer > button { flex: 1; justify-content: center; }
 
-  /* Sección de bienvenida */
   .welcome-section { padding: 1.5rem 0 0; }
   .welcome-title { font-size: 1.6rem; }
-
-  /* Servicios */
   .service-card { min-width: 180px; }
   .service-img-wrap { height: 180px; }
-
-  /* Main content padding */
   .main-content { padding: 0 1rem 5rem; }
 }
 
 @media (max-width: 480px) {
-  /* Calendario - solo 1 día en pantallas muy pequeñas */
-  .gcal-dias-header {
-    grid-template-columns: 36px repeat(1, 1fr);
-  }
-  .gcal-grid {
-    grid-template-columns: 36px repeat(1, 1fr);
-  }
-  .gcal-dia-label:nth-child(n+3) { display: none; }
-
+  .gcal-dias-header { grid-template-columns: 36px repeat(7, 100px); min-width: 736px; }
+  .gcal-grid { grid-template-columns: 36px repeat(7, 100px); min-width: 736px; }
+  .gcal-dia-label { display: flex !important; }
+  .gcal-slot { display: block !important; }
   .welcome-title { font-size: 1.4rem; }
   .section-title { font-size: 1.3rem; }
 }
